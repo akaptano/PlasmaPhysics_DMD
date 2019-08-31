@@ -518,6 +518,7 @@ def initialize_variable_project(dict,data,trunc):
 #   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
 #   then a stall is detected and the program halts.
 def variable_project(Xt,dict,trunc,start,end):
+    Xt = Xt.astype(np.complex128) #for numba
     lambda0 = 1.0
     maxlam = 20
     lamup = 2.0
@@ -551,7 +552,8 @@ def variable_project(Xt,dict,trunc,start,end):
     S = np.diag(S[0:trunc])
     V = V[:,0:trunc]
     Sinv = np.linalg.inv(S).astype(np.complex128)
-    b,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
+    b = parallel_lstsq(phimat,Xt)
+    #b,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
     res = Xt - np.dot(phimat,b)
     errlast = np.linalg.norm(res,'fro')/res_scale
     imode = 0
@@ -568,28 +570,31 @@ def variable_project(Xt,dict,trunc,start,end):
     skip = int(m*r/numThreads)
     for iter in range(maxiter):
         print('iter=',iter,', err=',errlast)
-        #tic_total = Clock.time()
+        tic_total = Clock.time()
         djacmat,scales = make_jacobian(alpha,time,U,Sinv,Vh, \
             res,b,trunc,djacmat,scales)
         Q1,Rprime = TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip)
-        Q2,R = np.linalg.qr(Rprime)
-        Q = TSQR2(Q1,Q2,trunc,numThreads,Q,skip)
+        Q2,R = TSQR2(Rprime)
+        #Q2,R = np.linalg.qr(Rprime)
+        Q = TSQR3(Q1,Q2,trunc,numThreads,Q,skip)
         rjac = R
         rhstop = np.dot(np.conj(np.transpose(Q)), \
             np.ravel(res,order='F'))
-        #toc_total = Clock.time()
-        #print('QR time = ',toc_total-tic_total)
+        toc_total = Clock.time()
+        print('QR time = ',toc_total-tic_total)
         rhstop = np.reshape(rhstop,(len(rhstop),1))
         rhs = np.ravel(np.vstack((rhstop, np.zeros((trunc,1))))) # transformed right hand side
 
         A = np.vstack((rjac,lambda0*np.diag(scales)))
-        delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
+        delta0 = parallel_lstsq(A,rhs)
+        #delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
         # new alpha guess
         alpha0 = alpha - np.ravel(delta0)
         # corresponding residual
         phimat = variable_project_make_phimat(alpha0,time)
 
-        b0,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
+        b0 = parallel_lstsq(phimat,Xt)
+        #b0,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
         res0 = Xt-np.dot(phimat,b0)
         err0 = np.linalg.norm(res0,'fro')/res_scale
         # check if this is an improvement
@@ -599,10 +604,12 @@ def variable_project(Xt,dict,trunc,start,end):
             # see if a smaller lambda is better
             lambda1 = lambda0/lamdown
             A = np.vstack((rjac,lambda1*np.diag(scales)))
-            delta1,g1,g2,g3 = np.linalg.lstsq(A,rhs)
+            delta1 = parallel_lstsq(A,rhs)
+            #delta1,g1,g2,g3 = np.linalg.lstsq(A,rhs)
             alpha1 = alpha - np.ravel(delta1)
             phimat = variable_project_make_phimat(alpha1,time)
-            b1,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
+            b1 = parallel_lstsq(phimat,Xt)
+            #b1,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
             res1 = Xt-np.dot(phimat,b1)
             err1 = np.linalg.norm(res1,'fro')/res_scale
 
@@ -624,10 +631,12 @@ def variable_project(Xt,dict,trunc,start,end):
                 print(lambda0)
                 lambda0 = lambda0*lamup
                 A = np.vstack((rjac,lambda0*np.diag(scales)))
-                delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
+                delta0 = parallel_lstsq(A,rhs)
+                #delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
                 alpha0 = alpha - np.ravel(delta0)
                 phimat = variable_project_make_phimat(alpha0,time)
-                b0,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
+                b0 = parallel_lstsq(phimat,Xt)
+                #b0,g1,g2,g3 = np.linalg.lstsq(phimat,Xt)
                 res0 = Xt-np.dot(phimat,b0)
                 err0 = np.linalg.norm(res0,'fro')/res_scale
                 if (err0 < errlast):
@@ -669,10 +678,11 @@ def variable_project(Xt,dict,trunc,start,end):
     print('Failed to meet tolerance after maxiter steps')
     return b,alpha
 
-## A function to quickly make the Vandermonde matrix
+## Make the Vandermonde matrix using numba
 # @param alpha The frequency part in e^(alpha*time)
 # @param time The time base 
 # @returns VandermondeT Vandermonde^T
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def variable_project_make_phimat(alpha,time):
     VandermondeT = np.exp(np.outer(time,alpha))
     return VandermondeT 
@@ -750,6 +760,14 @@ def TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip):
            djacmat[x*skip:(x+1)*skip,:])
     return Q1,Rprime
 
+
+## Takes the qr decomposition of Rprime
+# @param Rprime the matrix resulting from concatenation of the 
+# R from the separate qr decompositions
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
+def TSQR2(Rprime):
+    return np.linalg.qr(Rprime)
+
 ## Performs parallel matrix products, using numba,
 ## to construct our final Q = Q1*Q2
 # @param Q1 The full matrix resulting from concatenation of the 
@@ -763,10 +781,19 @@ def TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip):
 # @returns Q The final Q we want from the parallelized qr 
 #   decomposition of the Jacobian
 @jit(nopython=True,parallel=True,nogil=True,cache=True)
-def TSQR2(Q1,Q2,trunc,numThreads,Q,skip):
+def TSQR3(Q1,Q2,trunc,numThreads,Q,skip):
     for x in range(numThreads):
         Q[x*skip:(x+1)*skip,:] = \
             np.dot( \
             Q1[x*skip:(x+1)*skip,:], \
             Q2[x*trunc:(x+1)*trunc,:])
     return Q
+
+## Performs parallel lstsq on Ax=b using numba
+# @param A The A matrix in Ax = b
+# @param b The b matrix in Ax = b
+# @returns x The x matrix in Ax = b
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
+def parallel_lstsq(A,b):
+    x,g1,g2,g3 = np.linalg.lstsq(A,b)
+    return x
