@@ -105,16 +105,16 @@ def DMD_slide(total,numwindows,dmd_flag):
             print(extraIndex,injIndex,equilIndex,omega[extraIndex]/(2*pi*1000.0))
             for mode in range(trunc):
                 Bfield[:,starts[i]:ends[i]] += \
-                    0.5*b[mode]*np.outer(Bt[:,mode],VandermondeT[:,mode])
+                    0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                 if mode in equilIndex:
                     Bfield_eq[:,starts[i]:ends[i]] += \
-                        0.5*b[mode]*np.outer(Bt[:,mode],VandermondeT[:,mode])
+                        0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                 if mode in injIndex:
                     Bfield_inj[:,starts[i]:ends[i]] += \
-                        0.5*b[mode]*np.outer(Bt[:,mode],VandermondeT[:,mode])
+                        0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                 if mode in extraIndex:
                     Bfield_anom[:,starts[i]:ends[i]] += \
-                        0.5*b[mode]*np.outer(Bt[:,mode],VandermondeT[:,mode])
+                        0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
             Bfield_inj[:,starts[i]:ends[i]] += \
                 np.conj(Bfield_inj[:,starts[i]:ends[i]])
             Bfield_eq[:,starts[i]:ends[i]] += \
@@ -126,9 +126,9 @@ def DMD_slide(total,numwindows,dmd_flag):
             err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
                 /np.linalg.norm(X,'fro')
             print('Final error = ',err)
-            filename = 'power_'+str(dictname[len(dictname)-4])+'_'+str(i)+'.png'
+            filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
             power_spectrum(b,omega,f_1,filename,typename)
-            filename = 'phasePlot_'+str(dictname[len(dictname)-4])+'_'+str(i)+'.png'
+            filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
             freq_phase_plot(b,omega,f_1,filename,typename) 
 
         if dmd_flag == 1:
@@ -185,33 +185,35 @@ def DMD_forecast(dict):
     tsize = np.shape(data)[1]
     trainsize = int(tsize*3.0/5.0)
     testsize = tsize-trainsize
-    trunc = min(r,trainsize)
+    trunc = dict['trunc']
     dmd_data = np.zeros((r,tsize),dtype='complex')
     sdmd_data = np.zeros((r,tsize),dtype='complex')
     odmd_data = np.zeros((r,tsize),dtype='complex')
     dmd_data[:,0:trainsize] = data[:,0:trainsize]
     sdmd_data[:,0:trainsize] = data[:,0:trainsize]
     odmd_data[:,0:trainsize] = data[:,0:trainsize]
-    Bfield = dict['Bfield']
+    b = dict['b']
     omega = np.ravel(dict['omega'])
     Bt = dict['Bt']
-    sparse_Bfield = dict['sparse_Bfield']
+    sparse_b = dict['sparse_b']
     sparse_omega = np.ravel(dict['sparse_omega'])
     sparse_Bt = dict['sparse_Bt']
-    optimized_Bfield = dict['optimized_Bfield']
+    optimized_b = dict['optimized_b']
     optimized_omega = np.ravel(dict['optimized_omega'])
     optimized_Bt = dict['optimized_Bt']
-    VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
-    sparse_VandermondeT = make_VandermondeT(sparse_omega,tbase-tbase[0])
-    optimized_VandermondeT = make_VandermondeT(optimized_omega,tbase-tbase[0])
-    for i in range(testsize-1):
-        dmd_data[:,trainsize+i+1] = \
-            0.5*b[mode]*np.outer(Bt[:,mode],VandermondeT[:,mode])
-        sdmd_data[:,trainsize+i+1] = \
-            0.5*b[mode]*np.outer(sparse_Bt[:,mode],sparse_VandermondeT[:,mode])
-        odmd_data[:,trainsize+i+1] = \
-            0.5*b[mode]*np.outer( \
-            optimized_Bt[:,mode],optimized_VandermondeT[:,mode])
+    VandermondeT = make_VandermondeT(omega,time-time[0])
+    sparse_VandermondeT = make_VandermondeT(sparse_omega,time-time[0])
+    optimized_VandermondeT = make_VandermondeT(optimized_omega,time-time[0])
+    for mode in range(trunc):
+        dmd_data[:,trainsize+1:] = \
+            0.5*b[mode]*np.outer(Bt[:,mode], \
+            Vandermonde[mode,trainsize+1:])
+        sdmd_data[:,trainsize+1:] = \
+            0.5*b[mode]*np.outer(sparse_Bt[:,mode], \
+            sparse_Vandermonde[mode,trainsize+1:])
+        odmd_data[:,trainsize+1:] = \
+            0.5*b[mode]*np.outer(optimized_Bt[:,mode], \
+            optimized_VandermondeT[mode,trainsize+1:])
     dmd_data[:,trainsize+1:] += np.conj(dmd_data[:,trainsize+1:])
     sdmd_data[:,trainsize+1:] += np.conj(sdmd_data[:,trainsize+1:])
     odmd_data[:,trainsize+1:] += np.conj(odmd_data[:,trainsize+1:])
@@ -268,7 +270,7 @@ def DMD_forecast(dict):
 # @param trunc Truncation number for the SVD
 # @param q Defined in the sparse DMD paper
 # @param P Defined in the sparse DMD paper
-# @param b 
+# @param b The DMD coefficients to be altered 
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
@@ -302,7 +304,7 @@ def sparse_algorithm(trunc,q,P,b,gamma):
             np.conj((beta[:,j+1]-beta[:,j]))) < eps_dual:
             max_iters = j
             break
-        return alpha[:,j+1]
+    return alpha[:,j+1]
 
 ## Initializes a "good" initial guess for the variable
 ## projection algorithm used in the optimized DMD

@@ -459,9 +459,9 @@ def make_reconstructions(dict,types):
             plt.xlabel('Time (ms)',fontsize=fs)
         plt.ylabel('B (G)',fontsize=fs)
     plt.figure(2000)
-    plt.savefig(out_dir+'reconstructions'+str(dictname[len(dictname)-4])+'_sp.png')
+    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.png')
     plt.figure(3000)
-    plt.savefig(out_dir+'reconstructions'+str(dictname[len(dictname)-4])+'_imp.png')
+    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
 
 ## Makes (R,phi) contour plots of B_theta (poloidal B field)
 # @param dict A psi-tet dictionary
