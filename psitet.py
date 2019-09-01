@@ -1,33 +1,25 @@
 ## @mainpage
-# @section intro_sec Introduction
-# This is a Doxygen-generated documentation page for the
-# HIT_data_analysis github repo at https://github.com/akaptano/HIT_data_analysis.
-# -This repo is intended to
-# 1. Simplify and combine scripts related to comparison of bulk quantities between
-# data coming from different sources (psi-tet, nimrod, experiment).
-# 2. Standardize the use of MDSplus to obtain information from the
-# MDSplus tree.
-# 3. Put the BD and DMD analysis scripts, among other scripts like
-# sihi_smooth, calcCentroid, and so on, into well-documented, legible
-# code.
-# 4. Be an object-oriented (dictionaries) way of calling whatever
-# post-processing function you could ever need.
-#
-# Compatibility requires installation of Python 3.7 and the typical
-# python packages like scipy, numpy, matplotlib.
-# This code is intended to be compatible with Windows, MacOS, and Linux.
-# Issues should be posted to the github repository page.
+## @section intro_sec Introduction
+## This is a Doxygen-generated documentation page for the
+## dmdpaper github repo at https://github.com/akaptano/HIT_data_analysis.
+## 
+## This repository is for the DMD paper published by Alan Kaptanoglu et al. 
+##
+## Compatibility requires installation of Python 3.7 and the typical
+## python packages like scipy, numpy, matplotlib, and numba
+## This code is intended to be compatible with Windows, MacOS, and Linux.
+## Issues should be posted to the github repository page.
 
 ## @package psitet
-# Defines the psi-tet dictionary and the routine
-# to compare all the bulk quantities for a list
-# of psi-tet dictionaries
+## Defines the psi-tet dictionary and the routine
+## to compare all the bulk quantities for a list
+## of psi-tet dictionaries
 from dataclasses import dataclass
 ## @class psiObject
-# A data class which is used as a psi-tet dictionary
-# All data sources are converted to this format.
-# Note that new dictionary keys are added in various functions
-# which are not listed here. 
+## A data class which is used as a psi-tet dictionary
+## All data sources are converted to this format.
+## Note that new dictionary keys are added in various functions
+## which are not listed here. 
 @dataclass(init=False, repr=True, eq=True)
 class psiObject(object):
     ## Volumetric viscous heating

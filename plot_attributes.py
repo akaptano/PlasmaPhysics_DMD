@@ -21,12 +21,6 @@ out_dir = 'Pictures/'
 clabels = ['0',r'$\frac{\pi}{2}$', \
     r'$\pi$', \
     r'$\frac{3\pi}{2}$', r'$2\pi$']
-# @var Phase colorbar labels for the (R,phi) phase contour plots
-cbarlabels = ['0','',r'$\frac{\pi}{3}$', \
-    '', r'$\frac{2\pi}{3}$', '', \
-    r'$\pi$', '', r'$\frac{4\pi}{3}$', \
-    '',r'$\frac{5\pi}{3}$','',
-    r'$2\pi$']
 # @var mu0 permeability of free space
 mu0 = 4*pi*10**(-7)
 # @var fs Fontsize for axis labels and titles

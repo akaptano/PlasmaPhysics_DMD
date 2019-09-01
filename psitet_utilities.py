@@ -36,12 +36,12 @@ def sihi_smooth(y, time, inj_freq):
     return x
 
 ## Performs a SVD of the data in a psi-tet dictionary.
-## Has flags to control which data is put into the matrix
+## Has dmd_flags to control which data is put into the matrix
 ## for the SVD. 
 # @param dict A psi-tet dictionary
-# @param dict['use_IMP'] A flag to use the IMP data or not
-# @param dict['use_FIR'] A flag to use the FIR data or not
-# @param dict['use_IDS'] A flag to use the IDS data or not
+# @param dict['use_IMP'] A dmd_flag to use the IMP data or not
+# @param dict['use_FIR'] A dmd_flag to use the FIR data or not
+# @param dict['use_IDS'] A dmd_flag to use the IDS data or not
 def SVD(dict):
     t0 = dict['t0']
     tf = dict['tf']
@@ -132,8 +132,8 @@ def subtract_linear_trend(dict,data):
 ## surface midplane gap probes
 # @param dict A psi-tet dictionary
 # @param inj_freq The injector frequency
-# @param flag Flag to indicate which dmd method is used
-def toroidal_modes_sp(dict,inj_freq,flag):
+# @param dmd_flag Flag to indicate which dmd method is used
+def toroidal_modes_sp(dict,inj_freq,dmd_flag):
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf-1]
@@ -142,19 +142,19 @@ def toroidal_modes_sp(dict,inj_freq,flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if flag == 2:
-        b_cv = dict['sdmd_b_extra'] \
+    if dmd_flag == 2:
+        Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
-    elif flag == 3:
-        b_cv = dict['odmd_b_extra'] \
+    elif dmd_flag == 3:
+        Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
 
     tsize = len(t_vec)
     phi = midphi
     nmax = 7
-    amps = fourier_calc(nmax,tsize,b_cv,phi)
+    amps = fourier_calc(nmax,tsize,Bfield_anom,phi)
     plt.figure(50000,figsize=(figx, figy))
     for m in range(nmax+1):
         plt.plot(t_vec*1000, \
@@ -178,6 +178,7 @@ def toroidal_modes_sp(dict,inj_freq,flag):
     plt.xlabel('Toroidal Mode',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
+    ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_sp_histogram.png')
@@ -186,8 +187,8 @@ def toroidal_modes_sp(dict,inj_freq,flag):
 ## a set of 8 or 32 IMPs
 # @param dict A psi-tet dictionary
 # @param inj_freq The injector frequency
-# @param flag Flag to indicate which dmd method is used
-def toroidal_modes_imp(dict,inj_freq,flag):
+# @param dmd_flag Flag to indicate which dmd method is used
+def toroidal_modes_imp(dict,inj_freq,dmd_flag):
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf-1]
@@ -199,12 +200,12 @@ def toroidal_modes_imp(dict,inj_freq,flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if flag == 2:
-        b_cv = dict['sdmd_b_extra'] \
+    if dmd_flag == 2:
+        Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
-    elif flag == 3:
-        b_cv = dict['odmd_b_extra'] \
+    elif dmd_flag == 3:
+        Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
 
@@ -229,7 +230,7 @@ def toroidal_modes_imp(dict,inj_freq,flag):
     amps = np.zeros((nmax+1,16,tsize))
     plt.figure(figsize=(figx+2, figy+2))
     for k in range(16):
-        amps[:,k,:] = fourier_calc(nmax,tsize,b_cv[k::16,:],phis[k::16])
+        amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::16,:],phis[k::16])
         plt.subplot(4,4,(k+1))
         amax = np.max(np.max(amps[:,k,:]))
         for m in range(nmax+1):
@@ -271,8 +272,8 @@ def toroidal_modes_imp(dict,inj_freq,flag):
 ## of the four poloidal slices of the surface probes
 # @param dict A psi-tet dictionary
 # @param inj_freq The injector frequency
-# @param flag Flag to indicate which dmd method is used
-def poloidal_modes(dict,inj_freq,flag):
+# @param dmd_flag Flag to indicate which dmd method is used
+def poloidal_modes(dict,inj_freq,dmd_flag):
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf]
@@ -281,11 +282,11 @@ def poloidal_modes(dict,inj_freq,flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if flag == 2:
-        b_cv = dict['sdmd_b_extra'] \
+    if dmd_flag == 2:
+        Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset:offset+size_bpol,:]
-    elif flag == 3:
-        b_cv = dict['odmd_b_extra'] \
+    elif dmd_flag == 3:
+        Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset:offset+size_bpol,:]
     tsize = len(t_vec)
     # Find the poloidal gap probes
@@ -303,7 +304,7 @@ def poloidal_modes(dict,inj_freq,flag):
             continue
         if key[5] == 'P' and \
             key[2:5] != 'L05' and key[2:5] != 'L06':
-            temp_B[k2, :] = b_cv[j, :]
+            temp_B[k2, :] = Bfield_anom[j, :]
         if key[5:9] == 'P225' and \
             key[2:5] != 'L05' and key[2:5] != 'L06':
             temp_theta[k1] = sp_name_dict[key][3]

@@ -1,24 +1,19 @@
 ## @package psitet_load
-# Contains routines for loading in different file types
-# from experimental, nimrod, and psi-tet data sources
-import h5py
+## Contains routines for loading in different file types
+## from experimental, nimrod, and psi-tet data sources
 from os import path
 import scipy.io as sio
 from psitet import psiObject
 from dataclasses import asdict
 from plot_attributes import *
-# @var nchords The number of chords for IDS
-nchords = 108
-# @var npts The number of points per chord for IDS
-npts = 201
 
 ## Loads a psi-tet mat file using the old format from Tom's scan paper
 # @param fname Name of the base file
 # @param runfolder Name of the folder where the file resides
-# @param inj_frequencies List of inj_frequencies in kHz
+# @param f_1 f_1 in kHz
 # @param is_HITSI3 Flag to indicate if this is a HITSI3 run
 # @returns psitet List of psi-tet dictionaries
-def load_psitet_old(fname, runfolder, inj_freq, is_HITSI3, limits):
+def load_psitet_old(fname, runfolder, f_1, is_HITSI3, limits):
     num_sp_probes = 96
     num_imp_probes = 100
     num_inter_probes = 100
@@ -38,7 +33,7 @@ def load_psitet_old(fname, runfolder, inj_freq, is_HITSI3, limits):
     psilist = [a for a in dir(p) if not a.startswith('__')]
     p = asdict(p)
     for j in range(len(mat_files)):
-        filename = runfolder + fname + str(inj_freq) + \
+        filename = runfolder + fname + str(f_1) + \
             '_' + mat_files[j] + '.mat'
         if path.exists(filename):
             A = sio.loadmat(filename)
@@ -161,9 +156,9 @@ def load_psitet_old(fname, runfolder, inj_freq, is_HITSI3, limits):
     if is_HITSI3:
         p['curr03'] = p['curr03'] / mu0
         p['is_HITSI3'] = True
-    p['filename'] = 'Psi-Tet' + str(inj_freq)
+    p['filename'] = 'Psi-Tet' + str(f_1)
     p['dt'] = p['sp_time'][0,1]-p['sp_time'][0,0]
-    if path.exists(runfolder + 'Psi-Tet' + str(inj_freq) + '_xmhd.mat'):
+    if path.exists(runfolder + 'Psi-Tet' + str(f_1) + '_xmhd.mat'):
         flatten_object(p)
         interpolate_all(p)
         get_time_limits(p,limits)
@@ -173,10 +168,10 @@ def load_psitet_old(fname, runfolder, inj_freq, is_HITSI3, limits):
 # of psi-tet, including the 2T files
 # @param fname Name of the base file
 # @param runfolder Name of the folder where the file resides
-# @param inj_frequencies List of inj_frequencies in kHz
+# @param f_1 f_1 in kHz
 # @param is_HITSI3 Flag to indicate if this is a HITSI3 run
 # @returns psitet List of psi-tet dictionaries
-def load_psitet_new(fname, runfolder, inj_freq, is_HITSI3, limits):
+def load_psitet_new(fname, runfolder, f_1, is_HITSI3, limits):
     num_sp_probes = 96
     num_imp_probes = 100
     num_inter_probes = 100
@@ -199,7 +194,7 @@ def load_psitet_new(fname, runfolder, inj_freq, is_HITSI3, limits):
     psilist = [a for a in dir(p) if not a.startswith('__')]
     p = asdict(p)
     for j in range(len(mat_files)):
-        filename = runfolder + fname + str(inj_freq) + \
+        filename = runfolder + fname + str(f_1) + \
             '_' + mat_files[j] + '.mat'
         print(filename)
         if path.exists(filename):
@@ -299,16 +294,16 @@ def load_psitet_new(fname, runfolder, inj_freq, is_HITSI3, limits):
     if is_HITSI3:
         p['curr03'] = p['curr03'] / mu0
         p['is_HITSI3'] = True
-    p['filename'] = 'Psi-Tet-2T' + str(inj_freq)
+    p['filename'] = 'Psi-Tet-2T' + str(f_1)
     p['dt'] = p['sp_time'][0,1]-p['sp_time'][0,0]
-    if path.exists(runfolder + 'Psi-Tet-2T' + str(inj_freq) + '_xmhd.mat'):
+    if path.exists(runfolder + 'Psi-Tet-2T' + str(f_1) + '_xmhd.mat'):
         flatten_object(p)
         interpolate_all(p)
         get_time_limits(p,limits)
     return p
 
-## Flattens keys in the dictionary which are of sizes
-# like (3,1,400) to (3,400) for ease of processing later
+## Flattens any keys in the dictionary which are of sizes
+## like (3,1,400) to (3,400) for ease of processing later
 # @param dict A psi-tet dictionary
 def flatten_object(dict):
     for key in dict.keys():
@@ -326,28 +321,27 @@ def flatten_object(dict):
                 (np.shape(dict[key])[0],np.shape(dict[key])[2]))
 
 ## Finds the appropriate start and end times for a given shot
-# based on when the toroidal current becomes non-trivial
+## based on when the toroidal current becomes non-trivial
 # @param dict A psi-tet dictionary
 def get_time_limits(dict,limits):
     idx1 = (np.abs(dict['sp_time'] - limits[0]*1e-3)).argmin()
     idx2 = (np.abs(dict['sp_time'] - limits[1]*1e-3)).argmin()
     dict['t0'] = idx1
     dict['tf'] = idx2
-    #dict['sp_time'] = dict['sp_time']-dict['sp_time'][idx1]
 
 ## Loads a single file into a psi-tet dictionary
 # @param filename Full path name of the file
-# @param inj_freq Injector Frequency in kHz
+# @param f_1 Injector Frequency in kHz
 # @param is_psitet Flag to check if this is a psi-tet file
 # @param is_2T Flag to check if this is a psi-tet 2T file
 # @param is_HITSI3 Flag to indicate this is a HITSI3 run
 # @returns p A psi-tet dictionary
-def loadshot(filename, directory, inj_freq, is_psitet, is_2T, \
+def loadshot(filename, directory, f_1, is_psitet, is_2T, \
     is_HITSI3, limits):
     if is_psitet and is_2T:
-        p = load_psitet_new(filename,directory,inj_freq,is_HITSI3,limits)
+        p = load_psitet_new(filename,directory,f_1,is_HITSI3,limits)
     elif is_psitet:
-        p = load_psitet_old(filename,directory,inj_freq,is_HITSI3,limits)
+        p = load_psitet_old(filename,directory,f_1,is_HITSI3,limits)
     else:
         p = asdict(psiObject())
         if path.exists(directory+filename):

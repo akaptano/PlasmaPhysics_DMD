@@ -4,9 +4,8 @@ from psitet_load import loadshot
 from psitet_utilities import SVD, \
     toroidal_modes_sp, poloidal_modes, \
     toroidal_modes_imp
-from dmd import DMD_slide, sparse_DMD_slide, optimized_DMD_slide
+from dmd import DMD_slide, DMD_forecast
 from dmd_utilities import \
-    DMD_forecast, \
     make_reconstructions, \
     dmd_animation, \
     toroidal_plot
@@ -81,16 +80,16 @@ def analysis(dmd,numwindows,directory,postprocess,filenames,freqs, \
     total = []
     for i in range(len(filenames)):
         filename = filenames[i]
-        inj_freq = np.atleast_1d(freqs[i])
+        f_1 = np.atleast_1d(freqs[i])
         if filenames[i][0:10]=='Psi-Tet-2T':
             temp_dict = loadshot('Psi-Tet-2T',directory, \
-                int(inj_freq),True,True,is_HITSI3,limits)
+                int(f_1),True,True,is_HITSI3,limits)
         elif filenames[i][0:3]=='Psi':
             temp_dict = loadshot('Psi-Tet',directory, \
-                int(inj_freq),True,False,is_HITSI3,limits)
+                int(f_1),True,False,is_HITSI3,limits)
         else:
             temp_dict = loadshot(filename,directory, \
-                np.atleast_1d(int(inj_freq)),False,False, \
+                np.atleast_1d(int(f_1)),False,False, \
                 is_HITSI3,limits)
         if imp == 0:
             temp_dict['use_IMP'] = False
@@ -101,6 +100,7 @@ def analysis(dmd,numwindows,directory,postprocess,filenames,freqs, \
         temp_dict['use_IDS'] = ids
         temp_dict['nprocs'] = nprocs
         temp_dict['trunc'] = trunc
+        temp_dict['f_1'] = f_1
         total.append(temp_dict)
 
     total = np.asarray(total).flatten()
@@ -109,16 +109,12 @@ def analysis(dmd,numwindows,directory,postprocess,filenames,freqs, \
             if k == 0:
                 for i in range(len(filenames)):
                     SVD(total[i])
-            if dmd[k] == 1:
-                DMD_slide(total,freqs,numwindows)
-            if dmd[k] == 2:
-                sparse_DMD_slide(total,freqs,numwindows)
-            if dmd[k] == 3:
-                optimized_DMD_slide(total,freqs,numwindows)
-            if dmd[k] == 4:
-                DMD_forecast(total[0],freqs[0])
-        if dmd[k] > 4:
-            print('Invalid --dmd option, will assume no dmd')
+            if dmd[k] > 0 and dmd[k] < 4:
+                DMD_slide(total,numwindows,dmd[k])
+            elif dmd[k] == 4:
+                DMD_forecast(total[0])
+            else:
+                print('Invalid --dmd option, will assume no dmd')
     if len(dmd) >= 1:
         make_reconstructions(total[0],dmd)
         toroidal_modes_imp(total[0],freqs[0],dmd[1])
