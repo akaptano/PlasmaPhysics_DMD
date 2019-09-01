@@ -86,22 +86,23 @@ def DMD_slide(total,numwindows,dmd_flag):
             dmd_b.append(b)
             dmd_omega.append(omega)
             dmd_Bt = Bt
-            sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
+            #sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
+            sortd = np.flip(np.argsort(np.real(omega)/(2*pi*1000.0)))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
-            sortd = np.flip(np.argsort(np.real(omega)/(2*pi*1000.0)))
+            anomIndex = np.atleast_1d(sortd[0:20])
             equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero())
             if equilIndex.size==0:
                 equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
             equilIndex = np.ravel(equilIndex).tolist()
             injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                 abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-            extraIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+            #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+            #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
             sortd = np.flip(np.argsort(abs(b)))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
-            print(extraIndex,injIndex,equilIndex,omega[extraIndex]/(2*pi*1000.0))
+            print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
             for mode in range(trunc):
                 Bfield[:,starts[i]:ends[i]] += \
                     0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
@@ -111,7 +112,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 if mode in injIndex:
                     Bfield_inj[:,starts[i]:ends[i]] += \
                         0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                if mode in extraIndex:
+                if mode in anomIndex:
                     Bfield_anom[:,starts[i]:ends[i]] += \
                         0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
             Bfield_inj[:,starts[i]:ends[i]] += \

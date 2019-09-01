@@ -472,7 +472,7 @@ def toroidal_plot(dict,flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 500
+    tstep = 10
     offset = 2
     if dict['is_HITSI3']:
         offset = 3
