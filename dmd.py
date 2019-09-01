@@ -18,7 +18,7 @@ def DMD_slide(total,numwindows,dmd_flag):
         dictname = dict['filename']
         t0 = dict['t0']
         tf = dict['tf']
-        data = dict['SVD_data']
+        data = np.copy(dict['SVD_data'])
         time = dict['sp_time'][t0:tf-1]
         dt = dict['sp_time'][1] - dict['sp_time'][0]
         r = np.shape(data)[0]
@@ -39,7 +39,6 @@ def DMD_slide(total,numwindows,dmd_flag):
         Bfield_anom = np.zeros((r,tsize),dtype='complex')
         dmd_b = []
         dmd_omega = []
-        dmd_Bt = []
         for i in range(numwindows):
             tbase = time[starts[i]:ends[i]]
             X = data[:,starts[i]:ends[i]]
@@ -71,11 +70,11 @@ def DMD_slide(total,numwindows,dmd_flag):
             elif dmd_flag == 3:
                 initialize_variable_project(dict,data,trunc)
                 # Time algorithm 2 from Askham/Kutz 2017
-                tic = Clock.process_time()
+                tic = Clock.time()
                 B,omega = variable_project( \
                     np.transpose(X),dict,trunc,starts[i],ends[i])
-                toc = Clock.process_time()
-                print('time in variable_projection = ',(toc-tic)*1e-1,' s')
+                toc = Clock.time()
+                print('time in variable_projection = ',toc-tic,' s')
                 Bt = np.transpose(B)
                 b = np.conj(np.transpose(np.sqrt(np.sum(abs(Bt)**2,axis=0))))
                 Bt = np.dot(Bt,np.diag(1.0/b))
@@ -86,7 +85,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             omega[np.isnan(omega).nonzero()] = 0
             dmd_b.append(b)
             dmd_omega.append(omega)
-            dmd_Bt.append(Bt)
+            dmd_Bt = Bt
             sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
@@ -136,25 +135,25 @@ def DMD_slide(total,numwindows,dmd_flag):
             dict['Bfield_eq'] = Bfield_eq
             dict['Bfield_inj'] = Bfield_inj
             dict['Bfield_anom'] = Bfield_anom
-            dict['b'] = dmd_b
-            dict['omega'] = dmd_omega
+            dict['b'] = np.asarray(dmd_b)
+            dict['omega'] = np.asarray(dmd_omega)
             dict['Bt'] = dmd_Bt
         elif dmd_flag == 2:
             dict['sparse_Bfield'] = Bfield
             dict['sparse_Bfield_eq'] = Bfield_eq
             dict['sparse_Bfield_inj'] = Bfield_inj
             dict['sparse_Bfield_anom'] = Bfield_anom
-            dict['sparse_b'] = dmd_b
-            dict['sparse_omega'] = dmd_omega
-            dict['sparse_Bt'] = dmd_Bt 
+            dict['sparse_b'] = np.asarray(dmd_b)
+            dict['sparse_omega'] = np.asarray(dmd_omega)
+            dict['sparse_Bt'] = dmd_Bt
         elif dmd_flag == 3:
             dict['optimized_Bfield'] = Bfield
             dict['optimized_Bfield_eq'] = Bfield_eq
             dict['optimized_Bfield_inj'] = Bfield_inj
             dict['optimized_Bfield_anom'] = Bfield_anom
-            dict['optimized_b'] = dmd_b
-            dict['optimized_omega'] = dmd_omega
-            dict['optimized_Bt'] = dmd_Bt 
+            dict['optimized_b'] = np.asarray(dmd_b)
+            dict['optimized_omega'] = np.asarray(dmd_omega)
+            dict['optimized_Bt'] = dmd_Bt
 
 ## Tests the DMD methods on forecasting by 
 ## dividing into test/train data and using
@@ -165,7 +164,7 @@ def DMD_forecast(dict):
     dictname = dict['filename']
     t0 = dict['t0']
     tf = dict['tf']
-    data = dict['SVD_data']
+    data = np.copy(dict['SVD_data'])
     time = dict['sp_time'][t0:tf]
     dt = dict['sp_time'][1] - dict['sp_time'][0]
     inj_curr_end = 2
@@ -175,7 +174,6 @@ def DMD_forecast(dict):
     plt.grid(True)
     size_bpol = np.shape(dict['sp_Bpol'])[0]
     index = size_bpol 
-    time = dict['sp_time'][t0:tf]
     for i in range(1,4):
         plt.subplot(3,1,i)
         plt.plot(time*1000, \
@@ -189,31 +187,34 @@ def DMD_forecast(dict):
     dmd_data = np.zeros((r,tsize),dtype='complex')
     sdmd_data = np.zeros((r,tsize),dtype='complex')
     odmd_data = np.zeros((r,tsize),dtype='complex')
-    dmd_data[:,0:trainsize] = data[:,0:trainsize]
-    sdmd_data[:,0:trainsize] = data[:,0:trainsize]
-    odmd_data[:,0:trainsize] = data[:,0:trainsize]
-    b = dict['b']
+    dmd_data[:,0:trainsize] = np.copy(data[:,0:trainsize])
+    sdmd_data[:,0:trainsize] = np.copy(data[:,0:trainsize])
+    odmd_data[:,0:trainsize] = np.copy(data[:,0:trainsize])
+    b = np.ravel(dict['b'])
     omega = np.ravel(dict['omega'])
     Bt = dict['Bt']
-    sparse_b = dict['sparse_b']
+    sparse_b = np.ravel(dict['sparse_b'])
     sparse_omega = np.ravel(dict['sparse_omega'])
     sparse_Bt = dict['sparse_Bt']
-    optimized_b = dict['optimized_b']
+    optimized_b = np.ravel(dict['optimized_b'])
     optimized_omega = np.ravel(dict['optimized_omega'])
     optimized_Bt = dict['optimized_Bt']
-    VandermondeT = make_VandermondeT(omega,time-time[0])
-    sparse_VandermondeT = make_VandermondeT(sparse_omega,time-time[0])
-    optimized_VandermondeT = make_VandermondeT(optimized_omega,time-time[0])
+    Vandermonde = \
+        np.transpose(make_VandermondeT(omega,time-time[0]))
+    sparse_Vandermonde = \
+        np.transpose(make_VandermondeT(sparse_omega,time-time[0]))
+    optimized_Vandermonde = \
+        np.transpose(make_VandermondeT(optimized_omega,time-time[0]))
     for mode in range(trunc):
-        dmd_data[:,trainsize+1:] = \
+        dmd_data[:,trainsize+1:] += \
             0.5*b[mode]*np.outer(Bt[:,mode], \
             Vandermonde[mode,trainsize+1:])
-        sdmd_data[:,trainsize+1:] = \
+        sdmd_data[:,trainsize+1:] += \
             0.5*b[mode]*np.outer(sparse_Bt[:,mode], \
             sparse_Vandermonde[mode,trainsize+1:])
-        odmd_data[:,trainsize+1:] = \
+        odmd_data[:,trainsize+1:] += \
             0.5*b[mode]*np.outer(optimized_Bt[:,mode], \
-            optimized_VandermondeT[mode,trainsize+1:])
+            optimized_Vandermonde[mode,trainsize+1:])
     dmd_data[:,trainsize+1:] += np.conj(dmd_data[:,trainsize+1:])
     sdmd_data[:,trainsize+1:] += np.conj(sdmd_data[:,trainsize+1:])
     odmd_data[:,trainsize+1:] += np.conj(odmd_data[:,trainsize+1:])
@@ -228,20 +229,20 @@ def DMD_forecast(dict):
         /np.linalg.norm(data[:,trainsize+1:],'fro')
     print('dmderr,sdmd_err,odmderr=',err1,' ',err2,' ',err3)
     plt.subplot(3,1,1)
-    plt.plot(time, \
+    plt.plot(time*1000, \
         dmd_data[index+inj_curr_end,:]*1e4,'b',label='DMD Forecast', \
         linewidth=lw, \
         path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
         pe.Normal()])
 
     plt.subplot(3,1,3)
-    plt.plot(time, \
+    plt.plot(time*1000, \
         sdmd_data[index+inj_curr_end,:]*1e4,'r',label='sparse DMD Forecast', \
         linewidth=lw, \
         path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
         pe.Normal()])
     plt.subplot(3,1,2)
-    plt.plot(time, \
+    plt.plot(time*1000, \
         odmd_data[index+inj_curr_end,:]*1e4,'g',label='optimized DMD Forecast', \
         linewidth=lw, \
         path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
@@ -254,7 +255,7 @@ def DMD_forecast(dict):
         if i==3:
             plt.xlabel('Time (ms)',fontsize=fs)
         plt.ylabel('B (G)',fontsize=fs)
-        plt.axvline(x=time[trainsize],color='k', \
+        plt.axvline(x=time[trainsize]*1000,color='k', \
             linewidth=lw)
         plt.legend(loc='upper left',fontsize=ls)
         ax = plt.gca()
@@ -264,7 +265,7 @@ def DMD_forecast(dict):
         #plt.ylim(-500,1000)
         #ax.set_yticks([-500,0,500,1000])
         ax.set_yticks([-150,0,150,300])
-    plt.savefig(out_dir+'_forecasting.png')
+    plt.savefig(out_dir+'forecasting.png')
 
 ## Performs the sparse DMD algorithm (see the paper)
 # @param trunc Truncation number for the SVD
@@ -412,20 +413,15 @@ def variable_project(Xt,dict,trunc,start,end):
     V = V[:,0:trunc]
     Sinv = np.linalg.inv(S).astype(np.complex128)
     b = parallel_lstsq(VandermondeT,Xt)
-    #b,g1,g2,g3 = np.linalg.lstsq(VandermondeT,Xt)
     res = Xt - np.dot(VandermondeT,b)
     errlast = np.linalg.norm(res,'fro')/res_scale
     imode = 0
     numThreads = dict['nprocs']
     config.NUMBA_NUM_THREADS=numThreads
-    #config.NUMBA_ENABLE_PROFILING=True
-    #config.DEBUG=True
     print('NUMBA, using ',config.NUMBA_NUM_THREADS,' threads')
     Rprime = np.zeros((trunc*numThreads,trunc),complex)
     Q1 = np.zeros((m*r,trunc),dtype=complex)
-    #Q2 = np.zeros((trunc*numThreads,trunc),dtype=np.complex128)
     Q = np.zeros((m*r,trunc),dtype=complex)
-    #dphitemp = np.zeros((tsize,len(omega)),dtype=np.complex128)
     skip = int(m*r/numThreads)
     for iter in range(maxiter):
         print('iter=',iter,', err=',errlast)

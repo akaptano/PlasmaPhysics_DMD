@@ -467,23 +467,30 @@ def make_reconstructions(dict,types):
 # @param dict A psi-tet dictionary
 # @param flag which DMD method to use
 def toroidal_plot(dict,flag):
+    num_IMPs = dict['num_IMPs']
     t0 = dict['t0']
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
+    tstep = 500
     offset = 2
     if dict['is_HITSI3']:
         offset = 3
     bpol_size = np.shape(dict['sp_Bpol'])[0]
     btor_size = np.shape(dict['sp_Btor'])[0]
     bpol_imp_size = np.shape(dict['imp_Bpol'])[0]
-    phis_imp = np.zeros(160*8)
-    rads_imp = np.zeros(160*8)
-    for i in range(8):
-        phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
+    phis_imp = np.zeros(160*num_IMPs)
+    rads_imp = np.zeros(160*num_IMPs)
+    for i in range(num_IMPs):
+        if num_IMPs == 8:
+          phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
+        elif num_IMPs == 32:
+          phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
+        else:
+          print('Invalid number of IMPs, exiting')
+          exit()
         rads_imp[i*160:(i+1)*160] = np.ones(160)*imp_rads
     if flag == 2:
-        tstep = 500
         bpol_eq_imp = dict['sparse_Bfield_eq'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
@@ -493,11 +500,10 @@ def toroidal_plot(dict,flag):
         bpol_imp = dict['sparse_Bfield'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_extra_imp = dict['sparse_Bfield_anom'] \
+        bpol_anom_imp = dict['sparse_Bfield_anom'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
     elif flag == 3:
-        tstep = 500
         bpol_eq_imp = dict['optimized_Bfield_eq'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
@@ -507,39 +513,17 @@ def toroidal_plot(dict,flag):
         bpol_imp = dict['optimized_Bfield'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_extra_imp = dict['optimized_Bfield_anom'] \
+        bpol_anom_imp = dict['optimized_Bfield_anom'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
 
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
     fig = plt.figure(figsize=(figx, figy))
     rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
     phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
     moviename = out_dir+'toroidal_Rphi_reconstruction.gif'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
@@ -549,35 +533,8 @@ def toroidal_plot(dict,flag):
     ani.save(moviename,fps=5)
 
     bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
-    midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
     moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.gif'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
@@ -586,37 +543,10 @@ def toroidal_plot(dict,flag):
         interval=100, blit=False)
     ani.save(moviename,fps=5)
 
-    bpol_imp = bpol_extra_imp
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
+    bpol_imp = bpol_anom_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
-    midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
-    moviename = out_dir+'toroidal_Rphi_Extra_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_anom_reconstruction.gif'
     ani = animation.FuncAnimation( \
        fig, update_tor_Rphi, range(0,tsize,tstep), \
        fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -624,37 +554,10 @@ def toroidal_plot(dict,flag):
        interval=100, blit=False)
     ani.save(moviename,fps=5)
 
-    bpol_imp = bpol_extra_imp
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
+    bpol_imp = bpol_anom_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
-    midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads[35:110],midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
-    moviename = out_dir+'toroidal_Rphi_Extra_reconstruction_zoomed.gif'
+    moviename = out_dir+'toroidal_Rphi_anom_reconstruction_zoomed.gif'
     ani = animation.FuncAnimation( \
        fig, update_tor_Rphi, range(0,tsize,tstep), \
        fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -663,35 +566,8 @@ def toroidal_plot(dict,flag):
     ani.save(moviename,fps=5)
 
     bpol_imp = bpol_eq_imp
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
-    midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
     moviename = out_dir+'toroidal_Rphi_Eq_reconstruction.gif'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
@@ -701,35 +577,8 @@ def toroidal_plot(dict,flag):
     ani.save(moviename,fps=5)
 
     bpol_imp = bpol_inj_imp
-    bpol_imp_frame = bpol_imp[:,0]
-    bpol_imp_frame_periodic = np.ravel([bpol_imp_frame, \
-        bpol_imp_frame, bpol_imp_frame])
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
-    plt.plot(rorig,phiorig,'ko',markersize=10)
-    midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    grid_bpol = np.asarray( \
-        griddata((rorig,phiorig),bpol_imp_frame_periodic, \
-        (midplaneR,midplanePhi),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneR,midplanePhi, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    plt.xlim(0,1.2849)
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
-    h.set_rotation(0)
-    plt.ylim((0,2*pi))
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
     moviename = out_dir+'toroidal_Rphi_inj_reconstruction.gif'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
@@ -737,48 +586,6 @@ def toroidal_plot(dict,flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=5)
-
-## Update function for FuncAnimation object
-## for the (R,Z) contour plots
-# @param frame A movie frame number
-# @param Bpol Poloidal B in the plane
-# @param bowtieR Radial coordinates of the bowtie boundary
-# @param bowtieZ Z coordinates of the bowtie boundary
-# @param R Radial coordinates of the 2D mesh
-# @param Z Z coordinates of the 2D mesh
-# @param time Array of times
-def update_tor_XY(frame,Bpol,midplaneX,midplaneY,x,y,time):
-    print(frame)
-    plt.clf()
-    plt.xlabel('X (m)',fontsize=fs)
-    h = plt.ylabel('Y (m)',fontsize=fs)
-    h.set_rotation(0)
-    plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
-    # plot the probe locations
-    plt.plot(x, y,'ko',label='Probes')
-    circle = Circle((0,0),radius=1.34)
-    patches = [circle]
-    p = PatchCollection(patches, alpha = 1.0)
-    p.set_edgecolors('k')
-    p.set_facecolors('w')
-    ax.add_collection(p)
-    Bpol_frame = Bpol[:,frame]
-    grid_bpol = np.asarray( \
-        griddata((x,y),Bpol_frame, \
-        (midplaneX,midplaneY),'cubic'))
-    v = np.linspace(-1,1,11)
-    #v = np.ravel([-np.flip(v),v])
-    grid_bpol = grid_bpol/np.max(np.max(abs(np.nan_to_num(grid_bpol))))
-    contour = plt.contourf(midplaneX,midplaneY, \
-        grid_bpol,v,cmap=colormap) #, \
-        #norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    cbar.ax.tick_params(labelsize=ts)
-    plt.xlim(0,1.2849)
-    plt.legend(fontsize=fs-12,loc='lower center')
 
 ## Update function for FuncAnimation object
 ## for the (R,phi) contour plots
@@ -796,10 +603,7 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     h = plt.ylabel(r'$\phi$',fontsize=fs+5)
     h.set_rotation(0)
     plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
-    #plt.locator_params(axis='y', nbins=9)
     ax = plt.gca()
-    #ax.yaxis.set_major_formatter(FuncFormatter(format_fn))
-    #ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     # plot the probe locations
     plt.plot(R, phi,'ko',markersize=ms,label='Probes')
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
@@ -808,11 +612,8 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
         [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
         markersize=ms,markeredgecolor='k',label='Y Injector Mouths')
-    #ax.set_yticks([0,pi/4,pi/2,3*pi/4,pi, \
-    #    5*pi/4,3*pi/2,7*pi/4,2*pi])
     ax.set_yticks([0,pi/2,pi,3*pi/2,2*pi])
     ax.set_yticklabels(clabels)
-    #plt.xlim((imp_rads[60],imp_rads[119]))
     ax.tick_params(axis='x', which='major', labelsize=ts)
     ax.tick_params(axis='x', which='minor', labelsize=ts)
     ax.tick_params(axis='y', which='major', labelsize=ts+10)
