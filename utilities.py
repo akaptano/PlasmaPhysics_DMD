@@ -79,7 +79,7 @@ def SVD(dict):
     else:
         data[0:2,:] = data[0:2,:]*mu0
     data = data[:,t0:tf]
-    data_sub = data #subtract_linear_trend(dict,data)
+    data_sub = -data #subtract_linear_trend(dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
     dict['SVD_data'] = data_sub
