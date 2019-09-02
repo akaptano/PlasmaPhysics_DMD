@@ -61,7 +61,7 @@ import click
 ## rather than --dmd 1 2 or something. This format could also be done
 ## by declaring --dmd to be of type (int,int). If a description
 ## of the various click options is desired, just type
-## python HITSI --help
+## python HITSI.py --help
 def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
     imp,limits,nprocs,trunc):
 
