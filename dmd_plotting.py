@@ -7,7 +7,7 @@ from scipy.interpolate import griddata
 from scipy.signal import spectrogram
 from map_probes import \
     sp_name_dict, imp_name_dict, \
-    imp_rads, imp_phis8
+    imp_rads, imp_phis8, imp_phis32
 
 ## Plots the power spectrum for the DMD
 # @param b The bs determined from any DMD algorithm
@@ -182,7 +182,7 @@ def dmd_animation(dict,numwindows,dmd_flag):
                 numwindows,starts,ends,typename,dmd_flag),
                 repeat=False, \
                 interval=100, blit=False)
-        ani.save(moviename,fps=5)
+        ani.save(moviename,fps=FPS)
     else:
         print('Using a single window,'+ \
             ' aborting dmd sliding window animation')
@@ -394,7 +394,7 @@ def make_reconstructions(dict,dmd_flag):
     size_bpol = np.shape(dict['sp_Bpol'])[0]
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
-    imp_index = size_bpol+size_btor+8
+    imp_index = size_bpol+size_btor+80
     inj_index = 2
     if dict['is_HITSI3']:
         inj_index = 3
@@ -482,7 +482,8 @@ def toroidal_plot(dict,dmd_flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 10
+    tstep = 2
+    FPS = 4
     offset = 2
     if dict['is_HITSI3']:
         offset = 3
@@ -530,8 +531,8 @@ def toroidal_plot(dict,dmd_flag):
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
     fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::10], rads_imp[::10], rads_imp[::10]])
-    phiorig = np.ravel([phis_imp[::10]-2*pi, phis_imp[::10], phis_imp[::10]+2*pi])
+    rorig = np.ravel([rads_imp[::1], rads_imp[::1], rads_imp[::1]])
+    phiorig = np.ravel([phis_imp[::1]-2*pi, phis_imp[::1], phis_imp[::1]+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
     moviename = out_dir+'toroidal_Rphi_reconstruction.gif'
@@ -540,18 +541,7 @@ def toroidal_plot(dict,dmd_flag):
         fargs=(movie_bpol,midplaneR,midplanePhi, \
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
-    ani.save(moviename,fps=5)
-
-    bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
-    movie_bpol = np.vstack((bpol_imp,bpol_imp))
-    movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.gif'
-    ani = animation.FuncAnimation( \
-        fig, update_tor_Rphi, range(0,tsize,tstep), \
-        fargs=(movie_bpol,midplaneR,midplanePhi, \
-        rorig,phiorig,time),repeat=False, \
-        interval=100, blit=False)
-    ani.save(moviename,fps=5)
+    ani.save(moviename,fps=FPS)
 
     bpol_imp = bpol_anom_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -562,18 +552,30 @@ def toroidal_plot(dict,dmd_flag):
        fargs=(movie_bpol,midplaneR,midplanePhi, \
        rorig,phiorig,time),repeat=False, \
        interval=100, blit=False)
-    ani.save(moviename,fps=5)
+    ani.save(moviename,fps=FPS)
 
-    bpol_imp = bpol_anom_imp
+    #bpol_imp = bpol_anom_imp
+    #movie_bpol = np.vstack((bpol_imp,bpol_imp))
+    #movie_bpol = np.vstack((movie_bpol,bpol_imp))
+    #midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
+    #moviename = out_dir+'toroidal_Rphi_anom_zoomed_reconstruction.gif'
+    #ani = animation.FuncAnimation( \
+    #   fig, update_tor_Rphi, range(0,tsize,tstep), \
+    #   fargs=(movie_bpol,midplaneR,midplanePhi, \
+    #   rorig,phiorig,time),repeat=False, \
+    #   interval=100, blit=False)
+    #ani.save(moviename,fps=FPS)
+
+    bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_anom_reconstruction_zoomed.gif'
+    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.gif'
     ani = animation.FuncAnimation( \
-       fig, update_tor_Rphi, range(0,tsize,tstep), \
-       fargs=(movie_bpol,midplaneR,midplanePhi, \
-       rorig,phiorig,time),repeat=False, \
-       interval=100, blit=False)
-    ani.save(moviename,fps=5)
+        fig, update_tor_Rphi, range(0,tsize,tstep), \
+        fargs=(movie_bpol,midplaneR,midplanePhi, \
+        rorig,phiorig,time),repeat=False, \
+        interval=100, blit=False)
+    ani.save(moviename,fps=FPS)
 
     bpol_imp = bpol_eq_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -584,7 +586,7 @@ def toroidal_plot(dict,dmd_flag):
         fargs=(movie_bpol,midplaneR,midplanePhi, \
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
-    ani.save(moviename,fps=5)
+    ani.save(moviename,fps=FPS)
 
     bpol_imp = bpol_inj_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -595,7 +597,7 @@ def toroidal_plot(dict,dmd_flag):
         fargs=(movie_bpol,midplaneR,midplanePhi, \
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
-    ani.save(moviename,fps=5)
+    ani.save(moviename,fps=FPS)
 
 ## Update function for FuncAnimation object
 ## for the (R,phi) contour plots
@@ -615,7 +617,7 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
     ax = plt.gca()
     # plot the probe locations
-    plt.plot(R, phi,'ko',markersize=ms,label='Probes')
+    plt.plot(R, phi,'ko',markersize=5,label='Probes')
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
         [pi/8.0,pi+pi/8.0],'ro',markersize=ms, \
         markeredgecolor='k',label='X Injector Mouths')

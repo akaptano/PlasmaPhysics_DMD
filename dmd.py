@@ -1,7 +1,7 @@
 ## @package dmd
 ## This file contains the different dmd methods
 from plot_attributes import *
-from dmd_utilities import power_spectrum, freq_phase_plot
+from dmd_plotting import power_spectrum, freq_phase_plot
 from numba import jit,config
 import time as Clock
 
@@ -64,7 +64,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 b = np.dot(np.linalg.inv(P),q)
                 typename = 'DMD'
                 if dmd_flag == 2:
-                    gamma = 10.0
+                    gamma = 1.0
                     b = sparse_algorithm(trunc,q,P,b,gamma)
                     typename = 'sparse DMD'
             elif dmd_flag == 3:
@@ -90,19 +90,24 @@ def DMD_slide(total,numwindows,dmd_flag):
             sortd = np.flip(np.argsort(np.real(omega)/(2*pi*1000.0)))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
-            anomIndex = np.atleast_1d(sortd[0:20])
+            #anomIndex = np.atleast_1d(sortd[0:26])
             equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero())
             if equilIndex.size==0:
                 equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
             equilIndex = np.ravel(equilIndex).tolist()
             injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                 abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
+            anomIndex = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
             #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
             #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
             sortd = np.flip(np.argsort(abs(b)))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
             print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
+            bsort = b[sortd]
+            weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
+                sum(abs(b[anomIndex]))
+            print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
             for mode in range(trunc):
                 Bfield[:,starts[i]:ends[i]] += \
                     0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
@@ -276,8 +281,8 @@ def DMD_forecast(dict):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
-    eps_prime = 1e-9
-    eps_dual = 1e-9
+    eps_prime = 1e-3
+    eps_dual = 1e-3
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -388,7 +393,7 @@ def variable_project(Xt,dict,trunc,start,end):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-4
+    eps_stall = 1e-5
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
@@ -400,8 +405,8 @@ def variable_project(Xt,dict,trunc,start,end):
     tsize = len(time)
     dt = time[1]-time[0]
     # initialize values
-    #omega = np.ravel(dict['dmd_omega'])
-    omega = dict['omega_init']
+    omega = np.ravel(dict['omega'])
+    #omega = dict['omega_init']
     osort = np.argsort(np.real(omega))
     print(omega[osort]/(2*pi*1000.0))
     omegas = np.zeros((trunc,maxiter),dtype='complex')
