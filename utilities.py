@@ -134,14 +134,17 @@ def toroidal_modes_sp(dict,dmd_flag):
         Bfield_anom = dict['Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
+        color = 'b'
     elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
+        color = 'r'
     elif dmd_flag == 3:
         Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
+        color = 'g'
 
     tsize = len(t_vec)
     phi = midphi
@@ -166,7 +169,7 @@ def toroidal_modes_sp(dict,dmd_flag):
     dict['toroidal_amps'] = amps
     plt.figure(60000,figsize=(figx, figy))
     plt.title('Surface Probes', fontsize=fs)
-    plt.bar(range(nmax+1),amps[:,0]*1e4,color='r',edgecolor='k')
+    plt.bar(range(nmax+1),amps[:,0]*1e4,color=color,edgecolor='k')
     plt.xlabel('Toroidal Mode',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
@@ -196,14 +199,17 @@ def toroidal_modes_imp(dict,dmd_flag):
         Bfield_anom = dict['Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
+        color = 'b'
     elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
+        color = 'r'
     elif dmd_flag == 3:
         Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
+        color = 'g'
 
     print('sihi smooth freq = ',f_1)
     tsize = len(t_vec)
@@ -259,7 +265,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     dict['toroidal_amps'] = avg_amps
     plt.figure(180000,figsize=(figx, figy))
     plt.title('Average of IMP Probes', fontsize=fs)
-    plt.bar(range(nmax+1),avg_amps[:,0]*1e4,color='r',edgecolor='k')
+    plt.bar(range(nmax+1),avg_amps[:,0]*1e4,color=color,edgecolor='k')
     plt.xlabel('Toroidal Mode',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
@@ -285,12 +291,15 @@ def poloidal_modes(dict,dmd_flag):
     if dmd_flag == 1:
         Bfield_anom = dict['Bfield_anom'] \
             [offset:offset+size_bpol,:]
+        color = 'b'
     elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset:offset+size_bpol,:]
+        color = 'r'
     elif dmd_flag == 3:
         Bfield_anom = dict['optimized_Bfield_anom'] \
             [offset:offset+size_bpol,:]
+        color = 'g'
     tsize = len(t_vec)
     # Find the poloidal gap probes
     k1 = 0
@@ -350,7 +359,7 @@ def poloidal_modes(dict,dmd_flag):
         plt.figure(70000,figsize=(figx, figy))
         plt.subplot(2,2,i+1)
         plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs)
-        plt.bar(range(nmax+1),amps[:,0]*1e4,color='r',edgecolor='k')
+        plt.bar(range(nmax+1),amps[:,0]*1e4,color=color,edgecolor='k')
         if i == 0 or i == 2:
             plt.ylabel('B (G)', fontsize=fs)
         if i >= 2:
