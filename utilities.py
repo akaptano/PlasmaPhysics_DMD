@@ -235,6 +235,7 @@ def toroidal_modes_imp(dict,dmd_flag):
         amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])
         amax = np.max(np.max(amps[:,k,:]))
         if k % 10 == 0: 
+          #plt.subplot(4,4,k+1)
           plt.subplot(4,4,int(k/10)+1)
           for m in range(nmax+1):
               plt.plot(t_vec*1000, \

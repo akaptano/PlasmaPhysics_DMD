@@ -97,7 +97,9 @@ def DMD_slide(total,numwindows,dmd_flag):
             equilIndex = np.ravel(equilIndex).tolist()
             injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                 abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-            anomIndex = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
+            anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
+            #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+            anomIndex = np.setdiff1d(anomIndex1,injIndex) 
             #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
             #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
             sortd = np.flip(np.argsort(abs(b)))
@@ -281,8 +283,8 @@ def DMD_forecast(dict):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
-    eps_prime = 1e-7
-    eps_dual = 1e-7
+    eps_prime = 1e-1
+    eps_dual = 1e-1
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -393,7 +395,7 @@ def variable_project(Xt,dict,trunc,start,end):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-5
+    eps_stall = 1e-3
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
@@ -405,8 +407,8 @@ def variable_project(Xt,dict,trunc,start,end):
     tsize = len(time)
     dt = time[1]-time[0]
     # initialize values
-    omega = np.ravel(dict['omega'])
-    #omega = dict['omega_init']
+    #omega = np.ravel(dict['omega'])
+    omega = dict['omega_init']
     osort = np.argsort(np.real(omega))
     print(omega[osort]/(2*pi*1000.0))
     omegas = np.zeros((trunc,maxiter),dtype='complex')
