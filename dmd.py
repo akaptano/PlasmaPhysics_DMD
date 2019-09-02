@@ -9,7 +9,7 @@ import time as Clock
 ## where we minimize |Xt - Vandermonde^T*B|_Frobenius
 # @param total A list of psi-tet dictionaries
 # @param numwindows Number of windows for the sliding window
-# @param dmd_flag Flag to indicate which DMD method to use 
+# @param dmd_flag Flag to indicate which DMD method to use
 def DMD_slide(total,numwindows,dmd_flag):
     fignum = len(total)*numwindows
     for k in range(len(total)):
@@ -32,7 +32,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             ends = starts + np.ones(numwindows,dtype='int')*windowsize
         else:
             print('windowsize > tsize, dmd invalid')
-        trunc = dict['trunc'] 
+        trunc = dict['trunc']
         Bfield = np.zeros((r,tsize),dtype='complex')
         Bfield_inj = np.zeros((r,tsize),dtype='complex')
         Bfield_eq = np.zeros((r,tsize),dtype='complex')
@@ -81,7 +81,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 typename = 'optimized DMD'
                 VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
                 Vandermonde = np.transpose(VandermondeT)
- 
+
             omega[np.isnan(omega).nonzero()] = 0
             dmd_b.append(b)
             dmd_omega.append(omega)
@@ -129,7 +129,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
             power_spectrum(b,omega,f_1,filename,typename)
             filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
-            freq_phase_plot(b,omega,f_1,filename,typename) 
+            freq_phase_plot(b,omega,f_1,filename,typename)
 
         if dmd_flag == 1:
             dict['Bfield'] = Bfield
@@ -156,7 +156,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             dict['optimized_omega'] = np.asarray(dmd_omega)
             dict['optimized_Bt'] = dmd_Bt
 
-## Tests the DMD methods on forecasting by 
+## Tests the DMD methods on forecasting by
 ## dividing into test/train data and using
 ## the full DMD reconstructions
 # @param dict A psi-tet dictionary
@@ -174,7 +174,7 @@ def DMD_forecast(dict):
     plt.figure(30000,figsize=(figx, figy))
     plt.grid(True)
     size_bpol = np.shape(dict['sp_Bpol'])[0]
-    index = size_bpol 
+    index = size_bpol
     for i in range(1,4):
         plt.subplot(3,1,i)
         plt.plot(time*1000, \
@@ -268,11 +268,11 @@ def DMD_forecast(dict):
         ax.set_yticks([-150,0,150,300])
     plt.savefig(out_dir+'forecasting.png')
 
-## Performs the sparse DMD algorithm (see the paper)
+## Performs the sparse DMD algorithm (see Jovanovic 2014)
 # @param trunc Truncation number for the SVD
 # @param q Defined in the sparse DMD paper
 # @param P Defined in the sparse DMD paper
-# @param b The DMD coefficients to be altered 
+# @param b The DMD coefficients to be altered
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
@@ -345,7 +345,7 @@ def initialize_variable_project(dict,data,trunc):
 
 ## Performs the Levenberg-Marquadt
 ## variable projection algorithm for the optimized DMD
-## with a parallel qr decomposition using the 
+## with a parallel qr decomposition using the
 ## parallel direct TSQR algorithm (Benson, 2013)
 # @param Xt The transposed data matrix (so number of time samples
 #   is the number of rows, rather than columns)
@@ -356,37 +356,38 @@ def initialize_variable_project(dict,data,trunc):
 # @param end The last index to use in the time array
 # @returns b The coefficients of the optimized DMD reconstruction
 # @returns omega The frequencies in the Vandermonde matrix
-# @var lambda0 Initial
-#   value used for the regularization parameter
-#   lambda in the Levenberg method (a larger
-#   lambda makes it more like gradient descent)
-# @var maxlam Maximum number
-#   of steps used in the inner Levenberg loop,
-#   i.e. the number of times you increase lambda
-#   before quitting
-# @var lamup Factor by which
-#   you increase lambda when searching for an
-#   appropriate step
-# @var lamdown Factor by which
-#   you decrease lambda when checking if that
-#   results in an error decrease
-# @var maxiter The maximum number of outer
-#   loop iterations to use before quitting
-# @var tol The tolerance for the relative
-#   error in the residual, i.e. the program will
-#   terminate if algorithm achieves err < tol
-# @var eps_stall The tolerance for detecting
-#   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
-#   then a stall is detected and the program halts.
 def variable_project(Xt,dict,trunc,start,end):
     Xt = Xt.astype(np.complex128) #for numba
+    ## Initial
+    ##   value used for the regularization parameter
+    ##   lambda in the Levenberg method (a larger
+    ##   lambda makes it more like gradient descent)
     lambda0 = 1.0
+    ## Maximum number
+    ##   of steps used in the inner Levenberg loop,
+    ##   i.e. the number of times you increase lambda
+    ##   before quitting
     maxlam = 20
+    ## Factor by which
+    ##   you increase lambda when searching for an
+    ##   appropriate step
     lamup = 2.0
+    ## Factor by which
+    ##   you decrease lambda when checking if that
+    ##   results in an error decrease
     lamdown = lamup
+    ## The maximum number of outer
+    ##   loop iterations to use before quitting
     maxiter = 100
+    ## The tolerance for the relative
+    ##   error in the residual, i.e. the program will
+    ##   terminate if algorithm achieves err < tol
     tol = 1e-3
+    ## The tolerance for detecting
+    ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
+    ##   then a stall is detected and the program halts.
     eps_stall = 1e-4
+
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
     n = r
@@ -534,33 +535,33 @@ def variable_project(Xt,dict,trunc,start,end):
     print('Failed to meet tolerance after maxiter steps')
     return b,omega
 
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 ## Make the Vandermonde matrix using numba
 # @param omega The frequency part in e^(omega*time)
-# @param time The time base 
+# @param time The time base
 # @returns VandermondeT Vandermonde^T
-@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def make_VandermondeT(omega,time):
     VandermondeT = np.exp(np.outer(time,omega))
-    return VandermondeT 
+    return VandermondeT
 
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 ## Creates the Jacobian for the Levenberg-Marquadt solution
 ## of the optimized DMD algorithm. This is parallelized with numba
 # @param omega The frequency part in e^(omega*time)
-# @param time The time base 
+# @param time The time base
 # @param U The U from the SVD of the Vandermonde
 # @param Sinv This is inv(S) where S is from the SVD of the Vandermonde
 # @param Vh This is V* from the SVD of the Vandermonde
 # @param res The residual (error) = |Xt-Vandermonde^T*B|
 # @param b The DMD coefficients
 # @param trunc The truncation number for the SVD
-# @param djacmat The Jacobian from the previous iteration, 
+# @param djacmat The Jacobian from the previous iteration,
 #   this is overwritten
-# @param scales The scales from the previous iteration, 
-#   this is overwritten 
+# @param scales The scales from the previous iteration,
+#   this is overwritten
 # @returns djacmat The Jacobian needed for Levenberg-Marquadt
 # @returns scales Forms the diagonal of the 'M' matrix for 'Marquadt'
 #   part of the algorithm
-@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def make_jacobian(omega,time,U,Sinv,Vh,res,b,trunc,djacmat,scales):
     mh = len(time)
     nh = len(omega)
@@ -579,10 +580,11 @@ def make_jacobian(omega,time,U,Sinv,Vh,res,b,trunc,djacmat,scales):
         scales[j] = max(scales[j],1e-6)
     return djacmat,scales
 
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 ## Performs parallel qr decompositions, using numba,
-## to construct the Q1 matrix  
+## to construct the Q1 matrix
 # @param djacmat The Jacobian needed for Levenberg-Marquadt
-# @param trunc The truncation number for the SVD, and the 
+# @param trunc The truncation number for the SVD, and the
 #   row size of each of the R submatrices resulting from each
 #   of the qr decompositions
 # @param numThreads The number of threads being used by numba
@@ -590,11 +592,10 @@ def make_jacobian(omega,time,U,Sinv,Vh,res,b,trunc,djacmat,scales):
 # @param Rprime The Rprime from the previous iteration, this is overwritten
 # @param skip The row size of each of the Q matrices resulting
 #   from each of the qr decompositions
-# @returns Q1 The full matrix resulting from concatenation of the 
+# @returns Q1 The full matrix resulting from concatenation of the
 #   Q from the separate qr decompositions
 # @returns Rprime The full matrix resulting from concatenation of
 #   the R from the separate qr decompositions
-@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip):
     for x in range(numThreads):
        Q1[x*skip:(x+1)*skip,:], \
@@ -603,27 +604,26 @@ def TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip):
            djacmat[x*skip:(x+1)*skip,:])
     return Q1,Rprime
 
-
-## Takes the qr decomposition of Rprime
-# @param Rprime the matrix resulting from concatenation of the 
-# R from the separate qr decompositions
 @jit(nopython=True,parallel=True,nogil=True,cache=True)
+## Takes the qr decomposition of Rprime
+# @param Rprime the matrix resulting from concatenation of the
+# R from the separate qr decompositions
 def TSQR2(Rprime):
     return np.linalg.qr(Rprime)
 
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 ## Performs parallel matrix products, using numba,
 ## to construct our final Q = Q1*Q2
-# @param Q1 The full matrix resulting from concatenation of the 
+# @param Q1 The full matrix resulting from concatenation of the
 #   Q from the separate qr decompositions
-# @param Q2 The Q from the qr decomposition of Rprime 
-# @param trunc The truncation number for the SVD, and the 
-#   row size of each of the Q2 submatrices  
+# @param Q2 The Q from the qr decomposition of Rprime
+# @param trunc The truncation number for the SVD, and the
+#   row size of each of the Q2 submatrices
 # @param numThreads The number of threads being used by numba
 # @param Q The Q from the previous iteration, this is overwritten
 # @param skip The row size of each of the Q and Q1 submatrices
-# @returns Q The final Q we want from the parallelized qr 
+# @returns Q The final Q we want from the parallelized qr
 #   decomposition of the Jacobian
-@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def TSQR3(Q1,Q2,trunc,numThreads,Q,skip):
     for x in range(numThreads):
         Q[x*skip:(x+1)*skip,:] = \
@@ -632,11 +632,11 @@ def TSQR3(Q1,Q2,trunc,numThreads,Q,skip):
             Q2[x*trunc:(x+1)*trunc,:])
     return Q
 
+@jit(nopython=True,parallel=True,nogil=True,cache=True)
 ## Performs parallel lstsq on Ax=b using numba
 # @param A The A matrix in Ax = b
 # @param b The b matrix in Ax = b
 # @returns x The x matrix in Ax = b
-@jit(nopython=True,parallel=True,nogil=True,cache=True)
 def parallel_lstsq(A,b):
     x,g1,g2,g3 = np.linalg.lstsq(A,b)
     return x

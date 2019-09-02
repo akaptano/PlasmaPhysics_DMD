@@ -1,14 +1,13 @@
 ## @mainpage
 ## @section intro_sec Introduction
 ## This is a Doxygen-generated documentation page for the
-## dmdpaper github repo at https://github.com/akaptano/HIT_data_analysis.
-## 
-## This repository is for the DMD paper published by Alan Kaptanoglu et al. 
+## dmdpaper github repo at https://github.com/akaptano/dmdpaper.
+##
+## This repository is for the DMD paper published by Alan Kaptanoglu et al.
 ##
 ## Compatibility requires installation of Python 3.7 and the typical
 ## python packages like scipy, numpy, matplotlib, and numba
 ## This code is intended to be compatible with Windows, MacOS, and Linux.
-## Issues should be posted to the github repository page.
 
 ## @package psitet
 ## Defines the psi-tet dictionary and the routine
@@ -19,13 +18,11 @@ from dataclasses import dataclass
 ## A data class which is used as a psi-tet dictionary
 ## All data sources are converted to this format.
 ## Note that new dictionary keys are added in various functions
-## which are not listed here. 
+## which are not listed here.
 @dataclass(init=False, repr=True, eq=True)
 class psiObject(object):
     ## Volumetric viscous heating
     visc = 0
-    ##
-    derr = 0
     ## Volumetric electron advective heating
     e_adv = 0
     ## Volumetric electron conductive heating
@@ -44,12 +41,8 @@ class psiObject(object):
     icond = 0
     ## Ion heat flux to the wall
     iwall = 0
-    ##
-    jerr = 0
     ## Linear Iterations of the solver (psi-tet only)
     lits = 0
-    ##
-    men = 0
     ## Volume-averaged plasma density
     ne = 0
     ## Nonlinear Iterations of the solver (psi-tet only)
@@ -58,24 +51,18 @@ class psiObject(object):
     ohmic = 0
     ## Volumetric particle power (change in kinetic energy)
     ppow = 0
-    ##
-    stime = 0
     ## Toroidal current
     tcurr = 0
     ## Volume-averaged electron temperature
     te = 0
     ## Toroidal flux
     tflux = 0
-    ##
+    ## Collisional heating
     therm = 0
     ## Volume-averaged ion temperature
     ti = 0
     ## Time base for xmhd.mat
     time = 0
-    ##
-    ts = 0
-    ##
-    ven = 0
     ## Injector power obtained from power balance
     inj_power = 0
     # hitn_driver.mat
@@ -83,14 +70,6 @@ class psiObject(object):
     curr01 = 0
     ## Injector current of the y-inj
     curr02 = 0
-    ##
-    dem01 = 0
-    ##
-    dem02 = 0
-    ##
-    fc01 = 0
-    ##
-    fc02 = 0
     ## Injector flux of the x-inj
     flux01 = 0
     ## Injector flux of the y-inj
@@ -98,14 +77,10 @@ class psiObject(object):
     ## Time base for hitn_driver.mat
     driver_time = 0
     # heat_flux.mat
-    ## Electron flux at every point in the volume
+    ## Electron heat flux at every point in the volume
     e_flux = 0
-    ##
-    e_ten = 0
-    ## Ion flux at every point in the volume
+    ## Ion heat flux at every point in the volume
     i_flux = 0
-    ##
-    i_ten = 0
     ## Time base for heat_flux.mat
     heat_flux_time = 0
     # sp_probes.mat

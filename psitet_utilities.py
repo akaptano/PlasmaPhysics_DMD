@@ -7,7 +7,8 @@ from map_probes import \
 from scipy.stats import linregress
 
 ## Python equivalent of the sihi_smooth function found in older
-## matlab scripts. Code simplified to only work for real-valued signals.
+## matlab scripts. This does a boxcar average.
+## Code simplified to only work for real-valued signals.
 # @param y Signal in time
 # @param time Time base associated with y
 # @param inj_freq Injector Frequency with which to apply the smoothing
@@ -37,7 +38,7 @@ def sihi_smooth(y, time, inj_freq):
 
 ## Performs a SVD of the data in a psi-tet dictionary.
 ## Has dmd_flags to control which data is put into the matrix
-## for the SVD. 
+## for the SVD.
 # @param dict A psi-tet dictionary
 # @param dict['use_IMP'] A dmd_flag to use the IMP data or not
 # @param dict['use_FIR'] A dmd_flag to use the FIR data or not
@@ -128,7 +129,7 @@ def subtract_linear_trend(dict,data):
             plt.savefig(out_dir+'linear_trend_test.png')
     return data_subtracted
 
-## Computes the toroidal mode spectrum using the 
+## Computes the toroidal mode spectrum using the
 ## surface midplane gap probes
 # @param dict A psi-tet dictionary
 # @param inj_freq The injector frequency
@@ -213,10 +214,10 @@ def toroidal_modes_imp(dict,inj_freq,dmd_flag):
     tsize = len(t_vec)
     num_IMPs = dict['num_IMPs']
     phis = np.zeros(160*num_IMPs)
-    if num_IMPs == 8: 
+    if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
-    elif num_IMPs == 32: 
+    elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
     else:

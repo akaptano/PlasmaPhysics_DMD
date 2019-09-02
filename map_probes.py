@@ -2,36 +2,36 @@
 ## Contains routines for mapping between surface probe
 ## names, locations, and indices, accounting for dead probes
 from plot_attributes import *
-# @var dead_probes permanent list of dead_probes
+## A list of HIT-SI's dead probes
 dead_probes = ['B_L01P045','B_S04P000','B_L07P180',\
     'B_S07T180','B_S05T000']
-# @var R Radial location for the surface probes in the order
-# L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
-# S04, S03, S02, S01, L05, L06
+## Radial location for the surface probes in the order
+## L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
+## S04, S03, S02, S01, L05, L06
 R = [0.4282, 0.4550, 0.4763, 0.4978, 0.4978, 0.4763,
      0.4549, 0.4282, 0.2061, 0.1760, 0.1384, 0.1007, 0.1007,
      0.1384, 0.1760, 0.2060, 0.5485, 0.5485]
-# @var Z Axial location for the surface probes in the order
-# L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
-# S04, S03, S02, S01, L05, L06
+## Axial location for the surface probes in the order
+## L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
+## S04, S03, S02, S01, L05, L06
 Z = [-0.2220, -0.1737, -0.1292, -0.0847, 0.0847, 0.1292,
     0.1735, 0.2220, 0.2364, 0.2024, 0.1654, 0.1312, -0.1312, \
     -0.1654, -0.2024, -0.2366, -0.0300, 0.0300]
-# @var Phi Toroidal angle locations of the surface probes, not
-# including the midplane probes
+## Toroidal angle locations of the surface probes, not
+## including the midplane probes
 Phi = np.asarray([0, 45, 180, 225]) * pi / 180.0
-# @var midphi Toroidal angle locations of the midplane probes
+## Toroidal angle locations of the midplane probes
 midphi = np.linspace(0,2*pi-22.5*pi/180.0,16)
-# @var Theta Poloidal location for the surface probes in the order
-# L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
-# S04, S03, S02, S01, L05, L06
+## Poloidal location for the surface probes in the order
+## L01, L02, L03, L04, L07, L08, L09, L10, S08, S07, S06, S05,
+## S04, S03, S02, S01, L05, L06
 Theta = np.asarray([1.164, 1.113, 1.063, 1.012, \
     .774, .723, .673, .622, \
     .330, .279, .228, .177, \
     1.609, 1.558, 1.507, 1.456, \
     .930, .856])*2*pi/1.78568
-# @var sp_name_dict Dictionary object for mapping between
-# surface probe names and surface probe positions
+## Dictionary object for mapping between
+## urface probe names and surface probe positions
 sp_name_dict = {
     'B_L01P000': [R[0], Z[0], Phi[0], Theta[0]],
     'B_L01T000': [R[0], Z[0], Phi[0], Theta[0]],
@@ -227,18 +227,24 @@ sp_name_dict = {
     'B_L06T337': [R[17], Z[17], midphi[15], Theta[17]]
 }
 
-# @var imp_R Radial positions of the IMP probe
+## Radial positions of the IMP probe
 imp_R = [0.3314, 0.3441, 0.3568, 0.3695, 0.3822, 0.3949, 0.4076, \
     0.4203, 0.4330, 0.4457, 0.4584, 0.4711, 0.4838, 0.4965, 0.5092, 0.5219, 0.5346]
-# @var imp_Z Z positions of the IMP probe
+## Z positions of the IMP probe
 imp_Z = 0.011
-# @var imp_phi Toroidal positions of the IMP probe
+## Toroidal position of the experimental IMP probe
 imp_phi = 225*pi/180.0
+## Toroidal positions of the 8 IMP probes in the BIG-HIT simulation
 imp_phis8 = [1.1781, 0.3927, 5.8905, 5.1051, 4.3197, 3.5343, 2.7489, 1.9635]
-imp_phis32 = [1.1781,0.9817,0.7854,0.5890,0.3927,0.1963,0,6.0868,5.8905,5.6941,5.4978,5.3014,5.1051,4.9087,4.7124,4.5160,4.3197,4.1233,3.9270,3.7306,3.5343,3.3379,3.1416,2.9452,2.7489,2.5525,2.3562,2.1598,1.9635,1.7671,1.5708,1.3744] 
+## Toroidal positions of the 32 IMP probes in the BIG-HIT simulation
+imp_phis32 = [1.1781,0.9817,0.7854,0.5890,0.3927,0.1963,0,6.0868,5.8905, \
+    5.6941,5.4978,5.3014,5.1051,4.9087,4.7124,4.5160,4.3197,4.1233,3.9270, \
+    3.7306,3.5343,3.3379,3.1416,2.9452,2.7489,2.5525,2.3562,2.1598,1.9635, \
+    1.7671,1.5708,1.3744]
+## Radial positions of the IMP probes in the BIG-HIT simulation
 imp_rads = np.loadtxt(out_dir+'radial_points_imp.txt')
-# @var imp_name_dict Dictionary object for mapping between
-# imp probe names and surface probe positions
+## Dictionary object for mapping between
+## imp probe names and surface probe positions
 imp_name_dict = {
     '01': [imp_R[0], imp_Z, imp_phi],
     '02': [imp_R[1], imp_Z, imp_phi],
@@ -260,10 +266,10 @@ imp_name_dict = {
 }
 ## Reads in the bowtie geometry coordinates
 ## and returns them
-#@param directory Name of the directory which contains
-#  'bowtie_locations.txt'
-#@returns R Radial locations of the bowtie boundary
-#@returns Z Z locations of the bowtie boundary
+# @param directory Name of the directory which contains
+#   'bowtie_locations.txt'
+# @returns R Radial locations of the bowtie boundary
+# @returns Z Z locations of the bowtie boundary
 def get_bowtie(directory):
     RZ = np.loadtxt(directory + 'bowtie_locations.txt')
     R = np.reshape(RZ[:,0]*100, (242,121))
