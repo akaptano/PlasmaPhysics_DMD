@@ -543,6 +543,17 @@ def toroidal_plot(dict,dmd_flag):
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
 
+    bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
+    movie_bpol = np.vstack((bpol_imp,bpol_imp))
+    movie_bpol = np.vstack((movie_bpol,bpol_imp))
+    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.mp4'
+    ani = animation.FuncAnimation( \
+        fig, update_tor_Rphi, range(0,tsize,tstep), \
+        fargs=(movie_bpol,midplaneR,midplanePhi, \
+        rorig,phiorig,time),repeat=False, \
+        interval=100, blit=False)
+    ani.save(moviename,fps=FPS)
+
     bpol_imp = bpol_anom_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
@@ -565,17 +576,6 @@ def toroidal_plot(dict,dmd_flag):
     #   rorig,phiorig,time),repeat=False, \
     #   interval=100, blit=False)
     #ani.save(moviename,fps=FPS)
-
-    bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
-    movie_bpol = np.vstack((bpol_imp,bpol_imp))
-    movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.mp4'
-    ani = animation.FuncAnimation( \
-        fig, update_tor_Rphi, range(0,tsize,tstep), \
-        fargs=(movie_bpol,midplaneR,midplanePhi, \
-        rorig,phiorig,time),repeat=False, \
-        interval=100, blit=False)
-    ani.save(moviename,fps=FPS)
 
     bpol_imp = bpol_eq_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
