@@ -1,3 +1,7 @@
+## @package dmd_plotting
+## Defines functions for making plots
+## and movies based on results from the
+## DMD methods
 from plot_attributes import *
 from scipy.interpolate import griddata
 from scipy.signal import spectrogram
@@ -54,7 +58,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
 #        0,f_1,2*f_1,3*f_1])
 #    ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$', \
 #        '0',r'$f_1$',r'$f_2$',r'$f_3$'])
- 
+
     #ax.set_xticks([-120,-5*f_1,-3*f_1,-f_1, \
     #    f_1,3*f_1,5*f_1,120])
     #ax.set_xticklabels([-120,r'$-f_5$',r'$-f_3$',r'$-f_1$', \
@@ -100,7 +104,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
         for snum in range(len(delta_k)):
             plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
-                label=typename,alpha=transparency) 
+                label=typename,alpha=transparency)
         #plt.scatter(f_k,delta_k,c=amp,s=amp,cmap=plt.cm.get_cmap('Reds'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
@@ -143,10 +147,10 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
 
 ## Creates a sliding window animation
 # @param dict A psi-tet dictionary
-# @param f_1 Injector frequency of the dictionary
 # @param numwindows Number of sliding windows
 # @param dmd_flag Flag to indicate what type of dmd algorithm is being used
-def dmd_animation(dict,f_1,numwindows,dmd_flag):
+def dmd_animation(dict,numwindows,dmd_flag):
+    f_1 = dict['f_1']
     t0 = dict['t0']
     tf = dict['tf']
     data = dict['SVD_data']
@@ -162,24 +166,23 @@ def dmd_animation(dict,f_1,numwindows,dmd_flag):
     else:
         print('windowsize > tsize, dmd invalid')
     if numwindows > 1:
-        for flag in dmd_flag:
-            if flag == 1:
-                moviename = out_dir+'dmd_movie.gif'
-                typename = 'DMD'
-            elif flag == 2:
-                moviename = out_dir+'sdmd_movie.gif'
-                typename = 'sparse DMD'
-            elif flag == 3:
-                moviename = out_dir+'odmd_movie.gif'
-                typename = 'optimized DMD'
-            fig = plt.figure(200+flag,figsize=(figx, figy))
-            ani = animation.FuncAnimation( \
-                fig, dmd_update, range(numwindows), \
-                fargs=(dict,f_1,windowsize, \
-                    numwindows,starts,ends,typename,flag),
-                    repeat=False, \
-                    interval=100, blit=False)
-            ani.save(moviename,fps=5)
+        if dmd_flag == 1:
+            moviename = out_dir+'dmd_movie.gif'
+            typename = 'DMD'
+        elif dmd_flag == 2:
+            moviename = out_dir+'sdmd_movie.gif'
+            typename = 'sparse DMD'
+        elif dmd_flag == 3:
+            moviename = out_dir+'odmd_movie.gif'
+            typename = 'optimized DMD'
+        fig = plt.figure(5000+dmd_flag,figsize=(figx, figy))
+        ani = animation.FuncAnimation( \
+            fig, dmd_update, range(numwindows), \
+            fargs=(dict,f_1,windowsize, \
+                numwindows,starts,ends,typename,dmd_flag),
+                repeat=False, \
+                interval=100, blit=False)
+        ani.save(moviename,fps=5)
     else:
         print('Using a single window,'+ \
             ' aborting dmd sliding window animation')
@@ -187,26 +190,26 @@ def dmd_animation(dict,f_1,numwindows,dmd_flag):
 ## Update function for making the sliding window spectrogram movies
 # @param i The ith frame
 # @param dict A psi-tet dictionary
-# @param f_1 The injector frequency
 # @param windowsize The size of the sliding window
 # @param numwindows The number of windows that are used
-# @param starts The start points of each of the windows 
-# @param ends The end points of each of the windows 
-# @param flag Which DMD method to use
-def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
-    if flag == 1:
+# @param starts The start points of each of the windows
+# @param ends The end points of each of the windows
+# @param dmd_flag Which DMD method to use
+def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
+    f_1 = dict['f_1']
+    if dmd_flag == 1:
         Bfield = dict['Bfield']
         Bfield_inj = dict['Bfield_inj']
         Bfield_eq = dict['Bfield_eq']
         b = np.asarray(dict['Bfield'])[i,:]
         omega = np.asarray(dict['omega'])[i,:]
-    if flag == 2:
+    if dmd_flag == 2:
         Bfield = dict['sparse_Bfield']
         Bfield_inj = dict['sparse_Bfield_inj']
         Bfield_eq = dict['sparse_Bfield_eq']
         b = np.asarray(dict['sparse_Bfield'])[i,:]
         omega = np.asarray(dict['sparse_omega'])[i,:]
-    if flag == 3:
+    if dmd_flag == 3:
         Bfield = dict['optimized_Bfield']
         Bfield_inj = dict['optimized_Bfield_inj']
         Bfield_eq = dict['optimized_Bfield_eq']
@@ -218,7 +221,7 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
     time = dict['sp_time'][t0:tf]
     dt = dict['sp_time'][1] - dict['sp_time'][0]
     r = np.shape(data)[0]
-    fig=plt.figure(200+flag,figsize=(figx, figy))
+    fig=plt.figure(5000+dmd_flag,figsize=(figx, figy))
     plt.subplot(2,2,1)
     ax1 = plt.gca()
     ax1.clear()
@@ -276,7 +279,7 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
     #    0,f_1,3*f_1,5*f_1])
     #ax2.set_xticklabels([r'$-f_5$','',r'$-f_1$', \
     #    '',r'$f_1$','',r'$f_5$'])
- 
+
     plt.ylim((1e-20,1e0))
     ax2.set_yticks([1e-20,1e-15,1e-10,1e-5,1e0])
     plt.xlabel(r'f (kHz)',fontsize=fs)
@@ -309,7 +312,7 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
         plt.axvline(dict['sp_time'][t0+starts[starti]]*1000,color='k')
     #plt.axvline(dict['sp_time'][t0+ends[i]]*1000,color='k')
     #plt.axvline(dict['sp_time'][t0+starts]*1000,color='k')
- 
+
     ax3 = plt.gca()
     ax3.set_xticks([0,1,2])
     ax3.set_xticklabels([0,1,2])
@@ -338,11 +341,11 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
     ax4 = plt.gca()
     ax4.set_xticks([0,1,2])
     ax4.set_xticklabels([0,1,2])
- 
+
     ax4.set_yticks([0,f_1,2*f_1,3*f_1])
     #ax4.set_yticks([0,f_1,3*f_1,5*f_1,100])
-    ax4.set_yticklabels([0,r'$f_1$',r'$f_2$',r'$f_3$']) 
-    #ax4.set_yticklabels([0,r'$f_1$',r'$f_3$',r'$f_5$',100]) 
+    ax4.set_yticklabels([0,r'$f_1$',r'$f_2$',r'$f_3$'])
+    #ax4.set_yticklabels([0,r'$f_1$',r'$f_3$',r'$f_5$',100])
     nseg = int((tf-t0)/numwindows)
     spectros=np.zeros((66,numwindows+1))
     #spectros=np.zeros((113,numwindows+1))
@@ -369,7 +372,7 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
     except:
         print("nothing to remove")
     #cb = plt.colorbar(pcm,ticks=[1e-8,1e-6,1e-4,1e-2])
-    #cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7]) 
+    #cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
     cb = plt.colorbar(pcm,ticks=[1e-10,1e-8,1e-6,1e-4,1e-2,1e0])#,cax=cbar_ax)
     cb.ax.tick_params(labelsize=ts)
     plt.xlabel('Time (ms)',fontsize=fs)
@@ -382,8 +385,8 @@ def dmd_update(i,dict,f_1,windowsize,numwindows,starts,ends,flag):
 ## Shows reconstructions using the DMD methods
 ## of a particular SP and a particular IMP probe
 # @param dict A psi-tet dictionary
-# @param types A list of the DMD methods which were used
-def make_reconstructions(dict,types):
+# @param dmd_flag Flag to indicate what type of dmd algorithm is being used
+def make_reconstructions(dict,dmd_flag):
     t0 = dict['t0']
     tf = dict['tf']
     dictname = dict['filename']
@@ -397,76 +400,83 @@ def make_reconstructions(dict,types):
         inj_index = 3
     time = dict['sp_time'][t0:tf]*1000
     tsize = len(time)
-    for i in range(len(types)):
-        typename = types[i]
-        if typename==1:
-            reconstr = dict['Bfield']
-            labelstring = 'DMD'
-            color = 'b'
-        elif typename==2:
-            reconstr = dict['sparse_Bfield']
-            labelstring = 'sparse DMD'
-            color = 'r'
-        elif typename==3:
-            reconstr = dict['optimized_Bfield']
-            labelstring = 'optimized DMD'
-            color = 'g'
-        elif typename==7:
-            continue
-        plt.figure(2000,figsize=(figx, figy))
-        plt.subplot(len(types),1,i+1) #plt.subplot(len(types),1,i+2)
-        plt.plot(time, \
-            data[index+inj_index,:]*1e4,'k',linewidth=lw)
-        plt.plot(time[:tsize-1], \
-            reconstr[index+inj_index,:tsize-1]*1e4,color,\
-            label=labelstring+' reconstruction',linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-        #plt.subplot(len(types),1,i+1) # get rid of this
-        if i==0:
-            plt.title(dict['filename'][7:13]+', Probe: B_L01T000', \
-                fontsize=fs)
-        plt.grid(True)
-        ax = plt.gca()
-        ax.tick_params(axis='both', which='major', labelsize=ts)
-        ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(fontsize=ls,loc='upper left')
-        if i == len(types)-1:
-            plt.xlabel('Time (ms)',fontsize=fs)
-        plt.ylabel('B (G)',fontsize=fs)
-        plt.ylim((-150,300))
-        #plt.ylim((-500,1000))
-        #ax.set_yticks([-500,0,500,1000])
-        ax.set_yticks([-150,0,150,300])
-        plt.figure(3000,figsize=(figx, figy))
-        plt.subplot(len(types),1,i+1) #plt.subplot(len(types),1,i+2)
-        plt.plot(time, \
-            data[imp_index+inj_index,:]*1e4,'k',linewidth=3)
-        plt.plot(time[:tsize-1], \
-            reconstr[imp_index+inj_index,:tsize-1]*1e4,color,\
-            label=labelstring+' reconstruction',linewidth=3) #, \
-            #path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            #pe.Normal()])
-        if i==0:
-            plt.title('BIG-HIT, Probe: IMP #8', \
-                fontsize=fs)
-        plt.grid(True)
-        ax = plt.gca()
-        ax.tick_params(axis='both', which='major', labelsize=ts)
-        ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(fontsize=ls,loc='upper left')
-        if i == len(types)-1:
-            plt.xlabel('Time (ms)',fontsize=fs)
-        plt.ylabel('B (G)',fontsize=fs)
-    plt.figure(2000)
+    plt.figure(2000,figsize=(figx, figy))
+    if dmd_flag==1:
+        plt.subplot(3,1,1)
+        plt.title(dict['filename'][7:13]+', Probe: B_L01T000', \
+            fontsize=fs)
+        reconstr = dict['Bfield']
+        labelstring = 'DMD'
+        color = 'b'
+    elif dmd_flag==2:
+        plt.subplot(3,1,2)
+        reconstr = dict['sparse_Bfield']
+        labelstring = 'sparse DMD'
+        color = 'r'
+    elif dmd_flag==3:
+        plt.subplot(3,1,3)
+        reconstr = dict['optimized_Bfield']
+        labelstring = 'optimized DMD'
+        color = 'g'
+        plt.xlabel('Time (ms)',fontsize=fs)
+
+    plt.plot(time, \
+        data[index+inj_index,:]*1e4,'k',linewidth=lw)
+    plt.plot(time[:tsize-1], \
+        reconstr[index+inj_index,:tsize-1]*1e4,color,\
+        label=labelstring+' reconstruction',linewidth=lw, \
+        path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        pe.Normal()])
+    plt.grid(True)
+    ax = plt.gca()
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.legend(fontsize=ls,loc='upper left')
+    plt.ylabel('B (G)',fontsize=fs)
+    plt.ylim((-150,300))
+    ax.set_yticks([-150,0,150,300])
+    #plt.ylim((-500,1000))
+    #ax.set_yticks([-500,0,500,1000])
     plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.png')
-    plt.figure(3000)
+
+    plt.figure(3000,figsize=(figx, figy))
+    if dmd_flag==1:
+        plt.subplot(3,1,1)
+        plt.title('BIG-HIT, Probe: IMP #8',fontsize=fs)
+        reconstr = dict['Bfield']
+        labelstring = 'DMD'
+        color = 'b'
+    elif dmd_flag==2:
+        plt.subplot(3,1,2)
+        reconstr = dict['sparse_Bfield']
+        labelstring = 'sparse DMD'
+        color = 'r'
+    elif dmd_flag==3:
+        plt.subplot(3,1,3)
+        reconstr = dict['optimized_Bfield']
+        labelstring = 'optimized DMD'
+        color = 'g'
+        plt.xlabel('Time (ms)',fontsize=fs)
+
+    plt.plot(time, \
+        data[imp_index+inj_index,:]*1e4,'k',linewidth=3)
+    plt.plot(time[:tsize-1], \
+        reconstr[imp_index+inj_index,:tsize-1]*1e4,color,\
+        label=labelstring+' reconstruction',linewidth=3) #, \
+        #path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        #pe.Normal()])
+    plt.grid(True)
+    ax = plt.gca()
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.legend(fontsize=ls,loc='upper left')
+    plt.ylabel('B (G)',fontsize=fs)
     plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
 
 ## Makes (R,phi) contour plots of B_theta (poloidal B field)
 # @param dict A psi-tet dictionary
-# @param flag which DMD method to use
-def toroidal_plot(dict,flag):
+# @param dmd_flag which DMD method to use
+def toroidal_plot(dict,dmd_flag):
     num_IMPs = dict['num_IMPs']
     t0 = dict['t0']
     tf = dict['tf']
@@ -490,7 +500,7 @@ def toroidal_plot(dict,flag):
           print('Invalid number of IMPs, exiting')
           exit()
         rads_imp[i*160:(i+1)*160] = np.ones(160)*imp_rads
-    if flag == 2:
+    if dmd_flag == 2:
         bpol_eq_imp = dict['sparse_Bfield_eq'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
@@ -503,7 +513,7 @@ def toroidal_plot(dict,flag):
         bpol_anom_imp = dict['sparse_Bfield_anom'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-    elif flag == 3:
+    elif dmd_flag == 3:
         bpol_eq_imp = dict['optimized_Bfield_eq'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]

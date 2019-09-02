@@ -346,7 +346,9 @@ def initialize_variable_project(dict,data,trunc):
 ## Performs the Levenberg-Marquadt
 ## variable projection algorithm for the optimized DMD
 ## with a parallel qr decomposition using the
-## parallel direct TSQR algorithm (Benson, 2013)
+## parallel direct TSQR algorithm (Benson, 2013).
+## Much of this code was translated from a 
+## matlab implementation (https://github.com/duqbo/optdmd, Askham 2017)
 # @param Xt The transposed data matrix (so number of time samples
 #   is the number of rows, rather than columns)
 # @param dict A dictionary object which has initialized SVD data

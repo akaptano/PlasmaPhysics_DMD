@@ -1,5 +1,6 @@
-## @package psitet_utilities
-## Defines various functions for post-processing
+## @package utilities
+## Defines various functions for smoothing, calculating
+## fourier transforms, SVD, and so on.
 from plot_attributes import *
 from map_probes import \
     sp_name_dict, dead_probes, \
@@ -11,10 +12,10 @@ from scipy.stats import linregress
 ## Code simplified to only work for real-valued signals.
 # @param y Signal in time
 # @param time Time base associated with y
-# @param inj_freq Injector Frequency with which to apply the smoothing
+# @param f_1 Injector Frequency with which to apply the smoothing
 # @returns x Smoothed signal in time
-def sihi_smooth(y, time, inj_freq):
-    injCyc = 1.0 / (1000.0 * inj_freq)
+def sihi_smooth(y, time, f_1):
+    injCyc = 1.0 / (1000.0 * f_1)
     Navg = 100
     Navg2 = int(Navg / 2.0)
     # make it 100 time points per injector cycle
@@ -40,9 +41,6 @@ def sihi_smooth(y, time, inj_freq):
 ## Has dmd_flags to control which data is put into the matrix
 ## for the SVD.
 # @param dict A psi-tet dictionary
-# @param dict['use_IMP'] A dmd_flag to use the IMP data or not
-# @param dict['use_FIR'] A dmd_flag to use the FIR data or not
-# @param dict['use_IDS'] A dmd_flag to use the IDS data or not
 def SVD(dict):
     t0 = dict['t0']
     tf = dict['tf']
@@ -74,17 +72,6 @@ def SVD(dict):
         imp_rad_indices = np.linspace(shape1+shape2, \
             shape3+shape2+shape1,shape3, \
             dtype = 'int')
-    # If adding IDS and FIR, need to think hard about units
-    if dict['use_IDS'] and ('ids_n' in dict.keys()):
-        dict['ids_n'] = np.nan_to_num(dict['ids_n'])
-        dict['ids_T'] = np.nan_to_num(dict['ids_T'])
-        dict['ids_V'] = np.nan_to_num(dict['ids_V'])
-        data = np.vstack((data,dict['ids_n']))
-        data = np.vstack((data,dict['ids_T']))
-        data = np.vstack((data,dict['ids_V']))
-    if dict['use_FIR'] and ('inter_n' in dict.keys()):
-        dict['inter_n'] = np.nan_to_num(dict['inter_n'])
-        data = np.vstack((data,dict['inter_n']))
 
     # correct injector currents
     if dict['is_HITSI3'] == True:
@@ -132,9 +119,9 @@ def subtract_linear_trend(dict,data):
 ## Computes the toroidal mode spectrum using the
 ## surface midplane gap probes
 # @param dict A psi-tet dictionary
-# @param inj_freq The injector frequency
 # @param dmd_flag Flag to indicate which dmd method is used
-def toroidal_modes_sp(dict,inj_freq,dmd_flag):
+def toroidal_modes_sp(dict,dmd_flag):
+    f_1 = dict['f_1']
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf-1]
@@ -187,9 +174,9 @@ def toroidal_modes_sp(dict,inj_freq,dmd_flag):
 ## Computes the toroidal mode spectrum using
 ## a set of 8 or 32 IMPs
 # @param dict A psi-tet dictionary
-# @param inj_freq The injector frequency
 # @param dmd_flag Flag to indicate which dmd method is used
-def toroidal_modes_imp(dict,inj_freq,dmd_flag):
+def toroidal_modes_imp(dict,dmd_flag):
+    f_1 = dict['f_1']
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf-1]
@@ -210,7 +197,7 @@ def toroidal_modes_imp(dict,inj_freq,dmd_flag):
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
 
-    print('sihi smooth freq = ',inj_freq)
+    print('sihi smooth freq = ',f_1)
     tsize = len(t_vec)
     num_IMPs = dict['num_IMPs']
     phis = np.zeros(160*num_IMPs)
@@ -272,9 +259,9 @@ def toroidal_modes_imp(dict,inj_freq,dmd_flag):
 ## Computes the poloidal mode spectrum for each
 ## of the four poloidal slices of the surface probes
 # @param dict A psi-tet dictionary
-# @param inj_freq The injector frequency
 # @param dmd_flag Flag to indicate which dmd method is used
-def poloidal_modes(dict,inj_freq,dmd_flag):
+def poloidal_modes(dict,dmd_flag):
+    f_1 = dict['f_1']
     t0 = dict['t0']
     tf = dict['tf']
     t_vec = dict['sp_time'][t0:tf]
@@ -328,7 +315,7 @@ def poloidal_modes(dict,inj_freq,dmd_flag):
         # b2 = np.sqrt(int.sp.B_L04T045**2 + int.sp.B_L04P045**2)
         # b3 = np.sqrt(int.sp.B_L04T180**2 + int.sp.B_L04P180**2)
         # b4 = np.sqrt(int.sp.B_L04T225**2 + int.sp.B_L04P225**2)
-        # b0 = sihi_smooth((b1+b2+b3+b4)/4.0,t_vec,inj_freq)
+        # b0 = sihi_smooth((b1+b2+b3+b4)/4.0,t_vec,f_1)
         plt.subplot(2,2,i+1)
         for m in range(nmax+1):
             plt.plot(t_vec*1000, \
