@@ -87,7 +87,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             dmd_omega.append(omega)
             dmd_Bt = Bt
             #sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
-            sortd = np.flip(np.argsort(np.real(omega)/(2*pi*1000.0)))
+            sortd = np.argsort(np.real(omega)/(2*pi*1000.0))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
             #anomIndex = np.atleast_1d(sortd[0:26])

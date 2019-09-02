@@ -394,7 +394,7 @@ def make_reconstructions(dict,dmd_flag):
     size_bpol = np.shape(dict['sp_Bpol'])[0]
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
-    imp_index = size_bpol+size_btor+80
+    imp_index = size_bpol+size_btor+82
     inj_index = 2
     if dict['is_HITSI3']:
         inj_index = 3
@@ -534,8 +534,8 @@ def toroidal_plot(dict,dmd_flag):
     rorig = np.ravel([rads_imp[::1], rads_imp[::1], rads_imp[::1]])
     phiorig = np.ravel([phis_imp[::1]-2*pi, phis_imp[::1], phis_imp[::1]+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
+    midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
+    moviename = out_dir+'toroidal_Rphi_reconstruction.gif'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
