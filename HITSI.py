@@ -112,10 +112,10 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         if dmd[k] > 0 and dmd[k] < 4:
             DMD_slide(total,numwindows,dmd[k])
             make_reconstructions(total[0],dmd[k])
+            toroidal_modes_imp(total[0],dmd[k])
+            toroidal_modes_sp(total[0],dmd[k])
+            poloidal_modes(total[0],dmd[k])
             if dmd[k] != 1:
-                toroidal_modes_imp(total[0],dmd[k])
-                toroidal_modes_sp(total[0],dmd[k])
-                poloidal_modes(total[0],dmd[k])
                 toroidal_plot(total[0],dmd[k])
             if animate_dmd:
                 dmd_animation(total[0],numwindows,dmd[k])

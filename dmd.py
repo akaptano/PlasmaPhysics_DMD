@@ -281,8 +281,8 @@ def DMD_forecast(dict):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
-    eps_prime = 1e-3
-    eps_dual = 1e-3
+    eps_prime = 1e-7
+    eps_dual = 1e-7
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')

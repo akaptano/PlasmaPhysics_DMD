@@ -130,7 +130,11 @@ def toroidal_modes_sp(dict,dmd_flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if dmd_flag == 2:
+    if dmd_flag == 1:
+        Bfield_anom = dict['Bfield_anom'] \
+            [offset+size_bpol-32: \
+            offset+size_bpol:2,:]
+    elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
@@ -188,7 +192,11 @@ def toroidal_modes_imp(dict,dmd_flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if dmd_flag == 2:
+    if dmd_flag == 1:
+        Bfield_anom = dict['Bfield_anom'] \
+            [offset+size_bpol+size_btor: \
+            offset+size_bpol+size_btor+size_imp_bpol,:]
+    elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
@@ -274,7 +282,10 @@ def poloidal_modes(dict,dmd_flag):
     offset = 2
     if dict['is_HITSI3'] == True:
         offset = 3
-    if dmd_flag == 2:
+    if dmd_flag == 1:
+        Bfield_anom = dict['Bfield_anom'] \
+            [offset:offset+size_bpol,:]
+    elif dmd_flag == 2:
         Bfield_anom = dict['sparse_Bfield_anom'] \
             [offset:offset+size_bpol,:]
     elif dmd_flag == 3:

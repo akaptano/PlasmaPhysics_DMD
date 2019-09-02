@@ -167,13 +167,13 @@ def dmd_animation(dict,numwindows,dmd_flag):
         print('windowsize > tsize, dmd invalid')
     if numwindows > 1:
         if dmd_flag == 1:
-            moviename = out_dir+'dmd_movie.gif'
+            moviename = out_dir+'dmd_movie.mp4'
             typename = 'DMD'
         elif dmd_flag == 2:
-            moviename = out_dir+'sdmd_movie.gif'
+            moviename = out_dir+'sdmd_movie.mp4'
             typename = 'sparse DMD'
         elif dmd_flag == 3:
-            moviename = out_dir+'odmd_movie.gif'
+            moviename = out_dir+'odmd_movie.mp4'
             typename = 'optimized DMD'
         fig = plt.figure(5000+dmd_flag,figsize=(figx, figy))
         ani = animation.FuncAnimation( \
@@ -535,7 +535,7 @@ def toroidal_plot(dict,dmd_flag):
     phiorig = np.ravel([phis_imp[::1]-2*pi, phis_imp[::1], phis_imp[::1]+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
-    moviename = out_dir+'toroidal_Rphi_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -546,7 +546,7 @@ def toroidal_plot(dict,dmd_flag):
     bpol_imp = bpol_anom_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_anom_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_anom_reconstruction.mp4'
     ani = animation.FuncAnimation( \
        fig, update_tor_Rphi, range(0,tsize,tstep), \
        fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -558,7 +558,7 @@ def toroidal_plot(dict,dmd_flag):
     #movie_bpol = np.vstack((bpol_imp,bpol_imp))
     #movie_bpol = np.vstack((movie_bpol,bpol_imp))
     #midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
-    #moviename = out_dir+'toroidal_Rphi_anom_zoomed_reconstruction.gif'
+    #moviename = out_dir+'toroidal_Rphi_anom_zoomed_reconstruction.mp4'
     #ani = animation.FuncAnimation( \
     #   fig, update_tor_Rphi, range(0,tsize,tstep), \
     #   fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -569,7 +569,7 @@ def toroidal_plot(dict,dmd_flag):
     bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -580,7 +580,7 @@ def toroidal_plot(dict,dmd_flag):
     bpol_imp = bpol_eq_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_Eq_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_Eq_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -591,7 +591,7 @@ def toroidal_plot(dict,dmd_flag):
     bpol_imp = bpol_inj_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_inj_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_inj_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
