@@ -535,7 +535,7 @@ def toroidal_plot(dict,dmd_flag):
     phiorig = np.ravel([phis_imp[::1]-2*pi, phis_imp[::1], phis_imp[::1]+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
-    moviename = out_dir+'toroidal_Rphi_reconstruction.gif'
+    moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -645,4 +645,4 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
     plt.legend(fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
-    plt.xlim(0,1.2849)
+    plt.xlim(imp_rads[60],imp_rads[120])

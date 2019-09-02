@@ -173,7 +173,7 @@ def toroidal_modes_sp(dict,dmd_flag):
     ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.savefig(out_dir+'toroidal_avgamps_sp_histogram.png')
+    plt.savefig(out_dir+'toroidal_avgamps_sp_histogram'+str(dmd_flag)+'.png')
 
 ## Computes the toroidal mode spectrum using
 ## a set of 8 or 32 IMPs
@@ -266,7 +266,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     ax.set_xticks([0, 1, 2, 3])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.savefig(out_dir+'toroidal_avgamps_imp_histogram.png')
+    plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.png')
 
 ## Computes the poloidal mode spectrum for each
 ## of the four poloidal slices of the surface probes
@@ -360,7 +360,7 @@ def poloidal_modes(dict,dmd_flag):
         ax.set_xticklabels(['0','1','2','3','4','5','6','7'])
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.savefig(out_dir+'poloidal_avgamps_sp_histogram.png')
+        plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.png')
 
 ## Performs the fourier calculation based on Wrobel 2011
 # @param nmax The toroidal/poloidal number resolution
