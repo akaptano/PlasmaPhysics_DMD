@@ -17,7 +17,7 @@ The .mat files for experimental shots 129175 and 129499, and the BIG-HIT simulat
 
 # License 
 
-All files in this repository are available under the MIT License. Feel free to use and repurpose the code as you please.
+All files in this repository are available under the MIT License. Feel free to use and repurpose the code as you please. Variable projection routines in this repository were modified from matlab (https://github.com/duqbo/optdmd) to python, and parallelized. 
 
 The MIT License (MIT)
 
