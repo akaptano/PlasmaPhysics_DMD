@@ -395,7 +395,7 @@ def variable_project(Xt,dict,trunc,start,end):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-4
+    eps_stall = 1e-5
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
