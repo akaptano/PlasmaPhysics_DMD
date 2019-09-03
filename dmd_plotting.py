@@ -394,7 +394,10 @@ def make_reconstructions(dict,dmd_flag):
     size_bpol = np.shape(dict['sp_Bpol'])[0]
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
-    imp_index = size_bpol+size_btor+80
+    if dict['num_IMPs'] == 8:
+    	imp_index = size_bpol+size_btor+8
+    elif dict['num_IMPs'] == 32:
+    	imp_index = size_bpol+size_btor+80
     inj_index = 2
     if dict['is_HITSI3']:
         inj_index = 3

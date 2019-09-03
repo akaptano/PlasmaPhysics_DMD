@@ -85,7 +85,7 @@ def SVD(dict):
         data[0:2,:] = data[0:2,:]*mu0
     data = data[:,t0:tf]
     noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
-    data_sub = -data #+noise
+    data_sub = data #+noise
     #data_sub = subtract_linear_trend(dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
@@ -225,16 +225,18 @@ def toroidal_modes_imp(dict,dmd_flag):
     if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
+        skip = 10
     elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
+        skip = 1
     else:
         print('Invalid number for the number of IMPs')
         exit()
     for i in range(num_IMPs):
         phis[i*160:(i+1)*160] = np.ones(160)*imp_phis[i]
     # subsample as needed
-    phis = phis[::1]
+    phis = phis[::skip]
     phis = phis[:len(phis)]
     amps = np.zeros((nmax+1,160,tsize))
     subcount = 1
@@ -255,7 +257,7 @@ def toroidal_modes_imp(dict,dmd_flag):
             ax.tick_params(axis='both', which='minor', labelsize=ts-6)
             ax.set_xticks([])
             ax.set_yticks([-1,0,1])
-    elif num_IMPS == 32:
+    elif num_IMPs == 32:
         for k in range(160):
             amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])
             amax = np.max(np.max(amps[:,k,:]))
