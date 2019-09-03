@@ -97,11 +97,11 @@ def DMD_slide(total,numwindows,dmd_flag):
             equilIndex = np.ravel(equilIndex).tolist()
             injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                 abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-            anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
+            #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
             #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-            anomIndex = np.setdiff1d(anomIndex1,injIndex) 
-            #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-            #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+            #anomIndex = np.setdiff1d(anomIndex1,injIndex) 
+            anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                abs(np.imag(omega)/(2*pi)),14500*2,atol=1000)).nonzero()))
             sortd = np.flip(np.argsort(abs(b)))
             print(omega[sortd]/(2*pi*1000.0))
             print(b[sortd]*np.conj(b[sortd]))
@@ -283,8 +283,8 @@ def DMD_forecast(dict):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
-    eps_prime = 1e-5
-    eps_dual = 1e-5
+    eps_prime = 1e-6
+    eps_dual = 1e-6
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')

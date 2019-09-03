@@ -85,7 +85,7 @@ def SVD(dict):
         data[0:2,:] = data[0:2,:]*mu0
     data = data[:,t0:tf]
     noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
-    data_sub = -data #+noise
+    data_sub = data #+noise
     #data_sub = subtract_linear_trend(dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
