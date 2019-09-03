@@ -53,12 +53,17 @@ def SVD(dict):
     data = np.vstack((data,dict['sp_Btor']))
     getshape = np.shape(data)[0]
     if dict['use_IMP']:
-        dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::1,:]
-        dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::1,:]
-        dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::1,:]
-        dict['imp_Bpol'] = dict['imp_Bpol'][::1]
-        dict['imp_Btor'] = dict['imp_Btor'][::1]
-        dict['imp_Brad'] = dict['imp_Brad'][::1]
+        if dict['num_IMPs'] == 8:
+            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::10,:]
+            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::10,:]
+            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::10,:]
+        if dict['num_IMPs'] == 32:
+            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::1,:]
+            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::1,:]
+            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::1,:]
+        dict['imp_Bpol'] = dict['imp_Bpol']
+        dict['imp_Btor'] = dict['imp_Btor']
+        dict['imp_Brad'] = dict['imp_Brad']
         data = np.vstack((data,dict['imp_Bpol']))
         shape1 = np.shape(dict['imp_Bpol'])[0]
         shape2 = np.shape(dict['imp_Btor'])[0]
@@ -79,7 +84,9 @@ def SVD(dict):
     else:
         data[0:2,:] = data[0:2,:]*mu0
     data = data[:,t0:tf]
-    data_sub = -data #subtract_linear_trend(dict,data)
+    noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
+    data_sub = -data #+noise
+    #data_sub = subtract_linear_trend(dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
     dict['SVD_data'] = data_sub
@@ -230,23 +237,43 @@ def toroidal_modes_imp(dict,dmd_flag):
     phis = phis[::1]
     phis = phis[:len(phis)]
     amps = np.zeros((nmax+1,160,tsize))
+    subcount = 1
     plt.figure(figsize=(figx+2, figy+2))
-    for k in range(160):
-        amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])
-        amax = np.max(np.max(amps[:,k,:]))
-        if k % 10 == 0: 
-          #plt.subplot(4,4,k+1)
-          plt.subplot(4,4,int(k/10)+1)
-          for m in range(nmax+1):
-              plt.plot(t_vec*1000, \
-                  amps[m,k,:]/amax, \
-                  label='n = '+str(m))
-          plt.ylim(-1,1)
-          ax = plt.gca()
-          ax.tick_params(axis='both', which='major', labelsize=ts-6)
-          ax.tick_params(axis='both', which='minor', labelsize=ts-6)
-          ax.set_xticks([])
-          ax.set_yticks([-1,0,1])
+    if num_IMPs == 8:
+        for k in range(16):
+            amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::16,:],phis[k::16])
+            amax = np.max(np.max(amps[:,k,:]))
+            plt.subplot(4,4,k+1)
+            for m in range(nmax+1):
+                plt.plot(t_vec*1000, \
+                    amps[m,k,:]/amax, \
+                    label='n = '+str(m), \
+                    linewidth=3)
+            plt.ylim(-1,1)
+            ax = plt.gca()
+            ax.tick_params(axis='both', which='major', labelsize=ts-6)
+            ax.tick_params(axis='both', which='minor', labelsize=ts-6)
+            ax.set_xticks([])
+            ax.set_yticks([-1,0,1])
+    elif num_IMPS == 32:
+        for k in range(160):
+            amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])
+            amax = np.max(np.max(amps[:,k,:]))
+            if k >= 74 and k < 90:
+                #plt.subplot(4,4,k+1)
+                plt.subplot(4,4,subcount)
+                for m in range(nmax+1):
+                    plt.plot(t_vec*1000, \
+                        amps[m,k,:]/amax, \
+                        label='n = '+str(m), \
+                        linewidth=3)
+                plt.ylim(-1,1)
+                ax = plt.gca()
+                ax.tick_params(axis='both', which='major', labelsize=ts-6)
+                ax.tick_params(axis='both', which='minor', labelsize=ts-6)
+                ax.set_xticks([])
+                ax.set_yticks([-1,0,1])
+                subcount = subcount+1
     plt.savefig(out_dir+'toroidal_amps_imp.png')
 
     plt.figure(170000,figsize=(figx, figy))

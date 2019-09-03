@@ -64,7 +64,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 b = np.dot(np.linalg.inv(P),q)
                 typename = 'DMD'
                 if dmd_flag == 2:
-                    gamma = 1.0
+                    gamma = 2.0
                     b = sparse_algorithm(trunc,q,P,b,gamma)
                     typename = 'sparse DMD'
             elif dmd_flag == 3:
@@ -283,8 +283,8 @@ def DMD_forecast(dict):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 100000
-    eps_prime = 1e-1
-    eps_dual = 1e-1
+    eps_prime = 1e-5
+    eps_dual = 1e-5
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -391,11 +391,11 @@ def variable_project(Xt,dict,trunc,start,end):
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol
-    tol = 1e-3
+    tol = 1e-4
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-3
+    eps_stall = 1e-4
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
