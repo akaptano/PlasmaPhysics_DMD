@@ -90,7 +90,7 @@ def SVD(dict):
     #data = data[:,t0:t0+int(tf/2)-1]
     data = data[:,t0:tf]
     noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
-    data_sub = data #+noise
+    data_sub = -data #+noise
     #data_sub = subtract_linear_trend(dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
@@ -278,8 +278,11 @@ def toroidal_modes_imp(dict,dmd_flag):
                 ax = plt.gca()
                 ax.tick_params(axis='both', which='major', labelsize=ts-6)
                 ax.tick_params(axis='both', which='minor', labelsize=ts-6)
-                ax.set_xticks([])
-                ax.set_yticks([-1,0,1])
+                ax.set_yticks([])
+                if subcount >= 13:
+                    xlabel('Time (ms)',fontsize=ts)
+                else:
+                    ax.set_xticks([])
                 subcount = subcount+1
     plt.savefig(out_dir+'toroidal_amps_imp.png')
 

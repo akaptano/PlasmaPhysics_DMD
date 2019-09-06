@@ -101,10 +101,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                 injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
                 #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
-                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                #anomIndex = np.setdiff1d(anomIndex1,injIndex)
-                anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                anomIndex = np.setdiff1d(anomIndex1,injIndex)
+                #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
                 print(b[sortd]*np.conj(b[sortd]))
@@ -123,8 +123,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                         Bfield_inj[:,starts[i]:ends[i]] += \
                             0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                     if mode in anomIndex:
+                        print(mode,omega[mode]/(2*pi*1000),b[mode])
                         Bfield_anom[:,starts[i]:ends[i]] += \
                             0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                #exit()
                 Bfield_inj[:,starts[i]:ends[i]] += \
                     np.conj(Bfield_inj[:,starts[i]:ends[i]])
                 Bfield_eq[:,starts[i]:ends[i]] += \
