@@ -280,7 +280,7 @@ def toroidal_modes_imp(dict,dmd_flag):
                 ax.tick_params(axis='both', which='minor', labelsize=ts-6)
                 ax.set_yticks([])
                 if subcount >= 13:
-                    xlabel('Time (ms)',fontsize=ts)
+                    plt.xlabel('Time (ms)',fontsize=ts)
                 else:
                     ax.set_xticks([])
                 subcount = subcount+1
