@@ -7,7 +7,8 @@ from plot_attributes import *
 from psitet_load import loadshot
 from utilities import SVD, \
     toroidal_modes_sp, poloidal_modes, \
-    toroidal_modes_imp
+    toroidal_modes_imp, plot_itor, \
+    plot_chronos
 from dmd import DMD_slide, DMD_forecast
 from dmd_plotting import \
     make_reconstructions, \
@@ -54,6 +55,9 @@ import click
 @click.option('--trunc', \
     default=10,type=int, \
     help='Where to truncate the SVD')
+@click.option('--forecast', \
+    default=False,type=bool, \
+    help='Flag to indicate if forecasting with the DMD methods should be done.')
 
 ## Main program that accepts python 'click' command line arguments.
 ## Note that options with multiple=true must have multiple values added
@@ -63,7 +67,7 @@ import click
 ## of the various click options is desired, just type
 ## python HITSI.py --help
 def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
-    imp,limits,nprocs,trunc):
+    imp,limits,nprocs,trunc,forecast):
 
     print('Running with the following command line options: ')
     print('DMD method(s) = ',dmd)
@@ -75,6 +79,7 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
     print('Time limits for each of the files = ',limits)
     print('Make a sliding window spectrogram?: ',animate_dmd)
     print('Number of threads for numba = ',nprocs)
+    print('Use DMD methods for forecasting?: ',forecast)
 
     is_HITSI3 = False
     if(len(filenames[0])==9):
@@ -97,6 +102,7 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
                 is_HITSI3,limits[i])
         if imp == 0:
             temp_dict['use_IMP'] = False
+            temp_dict['num_IMPs'] = 0
         else:
             temp_dict['use_IMP'] = True
             temp_dict['num_IMPs'] = imp
@@ -108,21 +114,25 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
     total = np.asarray(total).flatten()
     for i in range(len(filenames)):
         SVD(total[i])
-    for k in range(len(dmd)):
-        if dmd[k] > 0 and dmd[k] < 4:
-            DMD_slide(total,numwindows,dmd[k])
-            make_reconstructions(total[0],dmd[k])
-            toroidal_modes_imp(total[0],dmd[k])
-            toroidal_modes_sp(total[0],dmd[k])
-            poloidal_modes(total[0],dmd[k])
-            if k == len(dmd)-1:
-                toroidal_plot(total[0],dmd[k])
-            if animate_dmd:
-                dmd_animation(total[0],numwindows,dmd[k])
-        elif dmd[k] == 4:
-            DMD_forecast(total[0])
-        else:
-            print('Invalid --dmd option, will assume no dmd')
+        #plot_itor(total[i])
+        #plot_chronos(total[i])
+    if forecast:
+        DMD_forecast(total,numwindows,dmd)
+    else:
+        for k in range(len(dmd)):
+            if dmd[k] > 0 and dmd[k] < 4:
+                DMD_slide(total,numwindows,dmd[k])
+                make_reconstructions(total[0],dmd[k])
+                toroidal_modes_sp(total[0],dmd[k])
+                poloidal_modes(total[0],dmd[k])
+                if total[0]['use_IMP']:
+                    toroidal_modes_imp(total[0],dmd[k])
+                    if k == len(dmd)-1:
+                        toroidal_plot(total[0],dmd[k])
+                if animate_dmd:
+                    dmd_animation(total[0],numwindows,dmd[k])
+            else:
+                print('Invalid --dmd option, will assume no dmd')
 
 if __name__ == '__main__':
     analysis()

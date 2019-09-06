@@ -21,15 +21,15 @@ clabels = ['0',r'$\frac{\pi}{2}$', \
 ## Permeability of free space
 mu0 = 4*pi*10**(-7)
 ## Fontsize for axis labels and titles
-fs = 50
+fs = 40
 ## Fontsize for axis ticks
-ts = 38
+ts = 30
 ## Fontsize for pyplot legends
 ls = 30
 ## Markersize for scatter plots
 ms = 20
 ## Linewidth for line plots
-lw = 7
+lw = 4
 ## Figure size in horizontal dir
 figx = 14
 ## Figure size in vertical dir

@@ -24,16 +24,28 @@ def power_spectrum(b,omega,f_1,filename,typename):
     power = (b[sort]*np.conj(b[sort])).astype('float')
     power = power/np.max(power)
     if typename=='DMD':
+        #plt.scatter(np.sort(f_k), \
+        #    power,s=300,c='b',linewidths=3,edgecolors='k')
+        #plt.plot(np.sort(f_k), \
+        #    power,color='b',linewidth=lw,label=typename)
         plt.semilogy(np.sort(f_k), \
             power,color='b',linewidth=lw,label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
     elif typename=='sparse DMD':
+        #plt.scatter(np.sort(f_k), \
+        #    power,s=300,c='r',linewidths=3,edgecolors='k')
+        #plt.plot(np.sort(f_k), \
+        #    power,color='r',linewidth=lw,label=typename)
         plt.semilogy(np.sort(f_k), \
             power,color='r',linewidth=lw,label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
     elif typename=='optimized DMD':
+        #plt.scatter(np.sort(f_k), \
+        #    power,s=300,c='g',linewidths=3,edgecolors='k')
+        #plt.plot(np.sort(f_k), \
+        #    power,color='g',linewidth=lw,label=typename)
         plt.semilogy(np.sort(f_k), \
             power,color='g',linewidth=lw,label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
@@ -44,7 +56,8 @@ def power_spectrum(b,omega,f_1,filename,typename):
             label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    plt.legend(loc='upper left',fontsize=ls-8,ncol=3)
+    plt.yscale('log')
+    #plt.legend(loc='upper left',fontsize=ls-8,ncol=3)
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     plt.xlabel('f (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
@@ -63,7 +76,74 @@ def power_spectrum(b,omega,f_1,filename,typename):
     #    f_1,3*f_1,5*f_1,120])
     #ax.set_xticklabels([-120,r'$-f_5$',r'$-f_3$',r'$-f_1$', \
     #    r'$f_1$',r'$f_3$',r'$f_5$',120])
-    plt.ylim((1e-21,1e0))
+    plt.ylim((1e-10,1e0))
+    #ax.set_yticks([1e-12,1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
+    #ax.set_yticklabels([1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
+    ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
+        f_1,2*f_1,3*f_1])
+    ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$',0, \
+        r'$f_1$',r'$f_2$',r'$f_3$'])
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.grid(True)
+    plt.yticks([1e-10,1e-5,1e0])
+
+    plt.figure(10000,figsize=(figx, figy))
+    f_k = np.imag(omega)/(pi*2*1000.0)
+    delta_k = abs(np.real(omega)/(pi*2*1000.0))
+    sort = np.argsort(f_k)
+    power = (b[sort]*np.conj(b[sort])).astype('float')
+    power = power/np.max(power)
+    if typename=='DMD':
+        plt.semilogy(np.sort(f_k), \
+            power,color='b',linewidth=lw,label=typename, \
+            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            pe.Normal()])
+    elif typename=='sparse DMD':
+        plt.semilogy(np.sort(f_k), \
+            power,color='r',linewidth=lw,label=typename, \
+            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            pe.Normal()])
+    elif typename=='optimized DMD':
+        plt.semilogy(np.sort(f_k), \
+            power,color='g',linewidth=lw,label=typename, \
+            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            pe.Normal()])
+    elif typename[9]=='=':
+        alphas = np.flip(np.linspace(0.1,1.0,4))
+        if float(typename[11:]) == 1e-1:
+            alpha = alphas[0]
+        if float(typename[11:]) == 1e0:
+            alpha = alphas[1]
+        if float(typename[11:]) == 1e1:
+            alpha = alphas[2]
+        if float(typename[11:]) == 1e2:
+            alpha = alphas[3]
+        plt.semilogy(np.sort(f_k), \
+            power,color='r',linewidth=lw, \
+            label=typename,alpha=alpha, \
+            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            pe.Normal()])
+    plt.legend(loc='lower left',fontsize=ls-10,ncol=5)
+    plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
+    plt.xlabel('f (kHz)',fontsize=fs)
+    plt.xlim(-3*f_1,3*f_1)
+    h=plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
+    plt.xlabel(r'f (kHz)',fontsize=fs+4)
+    #plt.xlim(-120,120)
+    plt.xlim(-3*f_1,3*f_1)
+    plt.grid(True)
+    ax = plt.gca()
+#    ax.set_xticks([-3*f_1,-2*f_1,-f_1, \
+#        0,f_1,2*f_1,3*f_1])
+#    ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$', \
+#        '0',r'$f_1$',r'$f_2$',r'$f_3$'])
+
+    #ax.set_xticks([-120,-5*f_1,-3*f_1,-f_1, \
+    #    f_1,3*f_1,5*f_1,120])
+    #ax.set_xticklabels([-120,r'$-f_5$',r'$-f_3$',r'$-f_1$', \
+    #    r'$f_1$',r'$f_3$',r'$f_5$',120])
+    plt.ylim((1e-23,1e0))
     #ax.set_yticks([1e-12,1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     #ax.set_yticklabels([1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
@@ -83,10 +163,10 @@ def power_spectrum(b,omega,f_1,filename,typename):
 # @param filename Name of the file corresponding to the shot
 # @param typename type string indicating which algorithm is being used
 def freq_phase_plot(b,omega,f_1,filename,typename):
-    amp = abs(b)/np.max(abs(b))*2500 #/np.max(abs(b))
+    amp = abs(b)/np.max(abs(b))*1000 #/np.max(abs(b))
     camp = np.log(abs(b)/np.max(abs(b))) #/np.max(abs(b))
     for j in range(len(amp)):
-        amp[j] = max(amp[j],400.0)
+        amp[j] = max(amp[j],100.0)
     sort = np.argsort(amp)
     amp = amp[sort]
     delta_k = np.real(omega[sort])/1000.0/(2*pi)
@@ -96,13 +176,13 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
     if typename=='DMD':
         plt.subplot(4,1,1)
         for snum in range(len(delta_k)):
-            plt.scatter(f_k[snum],delta_k[snum],c='b',s=amp[snum], \
+            h0 = plt.scatter(f_k[snum],delta_k[snum],c='b',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
     elif typename=='sparse DMD':
         plt.subplot(4,1,3)
         for snum in range(len(delta_k)):
-            plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
+            h0 = plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
         #plt.scatter(f_k,delta_k,c=amp,s=amp,cmap=plt.cm.get_cmap('Reds'), \
@@ -112,16 +192,17 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
     elif typename=='optimized DMD':
         plt.subplot(4,1,2)
         for snum in range(len(delta_k)):
-            plt.scatter(f_k[snum],delta_k[snum],c='g',s=amp[snum], \
+            h0 = plt.scatter(f_k[snum],delta_k[snum],c='g',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.ylim(-1e3,1e1)
+    plt.legend([h0.get_label()],fontsize=ts,loc='lower right')
+    plt.ylim(-1e3,1e0)
     plt.yscale('symlog',linthreshy=1e-2)
     ax = plt.gca()
-    ax.set_yticks([-1e3,-1,-1e-2,1e-2,1e1])
+    ax.set_yticks([-1e3,-1,-1e-2,1e-2,1e0])
     plt.axhline(y=0,color='k',linewidth=3,linestyle='--')
     #ax.set_yticklabels([r'$-10^2$','',r'$-10^1$','',r'$-10^{-1}$','',0,'',r'$10^{-1}$','',r'$10^1$'])
     #plt.xscale('symlog')
@@ -395,7 +476,7 @@ def make_reconstructions(dict,dmd_flag):
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
     if dict['num_IMPs'] == 8:
-    	imp_index = size_bpol+size_btor+8
+    	imp_index = size_bpol+size_btor+2
     elif dict['num_IMPs'] == 32:
     	imp_index = size_bpol+size_btor+80
     inj_index = 2
@@ -436,10 +517,10 @@ def make_reconstructions(dict,dmd_flag):
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.legend(fontsize=ls,loc='upper left')
     plt.ylabel('B (G)',fontsize=fs)
-    plt.ylim((-150,300))
-    ax.set_yticks([-150,0,150,300])
-    #plt.ylim((-500,1000))
-    #ax.set_yticks([-500,0,500,1000])
+    #plt.ylim((-150,300))
+    #ax.set_yticks([-150,0,150,300])
+    plt.ylim((-500,600))
+    ax.set_yticks([-500,0,500])
     plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.png')
 
     plt.figure(3000,figsize=(figx, figy))
@@ -461,20 +542,21 @@ def make_reconstructions(dict,dmd_flag):
         color = 'g'
         plt.xlabel('Time (ms)',fontsize=fs)
 
-    plt.plot(time, \
-        data[imp_index+inj_index,:]*1e4,'k',linewidth=3)
-    plt.plot(time[:tsize-1], \
-        reconstr[imp_index+inj_index,:tsize-1]*1e4,color,\
-        label=labelstring+' reconstruction',linewidth=3) #, \
-        #path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-        #pe.Normal()])
-    plt.grid(True)
-    ax = plt.gca()
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.legend(fontsize=ls,loc='upper left')
-    plt.ylabel('B (G)',fontsize=fs)
-    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
+    if dict['use_IMP']:
+        plt.plot(time, \
+            data[imp_index+inj_index,:]*1e4,'k',linewidth=3)
+        plt.plot(time[:tsize-1], \
+            reconstr[imp_index+inj_index,:tsize-1]*1e4,color,\
+            label=labelstring+' reconstruction',linewidth=3) #, \
+            #path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            #pe.Normal()])
+        plt.grid(True)
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='major', labelsize=ts)
+        ax.tick_params(axis='both', which='minor', labelsize=ts)
+        plt.legend(fontsize=ls,loc='upper left')
+        plt.ylabel('B (G)',fontsize=fs)
+        plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
 
 ## Makes (R,phi) contour plots of B_theta (poloidal B field)
 # @param dict A psi-tet dictionary
@@ -485,7 +567,7 @@ def toroidal_plot(dict,dmd_flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 1
+    tstep = 500
     FPS = 4
     offset = 2
     if dict['is_HITSI3']:
@@ -498,7 +580,7 @@ def toroidal_plot(dict,dmd_flag):
     for i in range(num_IMPs):
         if num_IMPs == 8:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
-          skip = 10
+          skip = 65
         elif num_IMPs == 32:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
           skip = 1
@@ -552,7 +634,7 @@ def toroidal_plot(dict,dmd_flag):
     rorig = np.ravel([rads_imp[::skip], rads_imp[::skip], rads_imp[::skip]])
     phiorig = np.ravel([phis_imp[::skip]-2*pi, phis_imp[::skip], phis_imp[::skip]+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
-    midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
+    midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
     moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
@@ -660,7 +742,10 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
     cbar = plt.colorbar(ticks=v,extend='both')
     cbar.ax.tick_params(labelsize=ts)
-    #ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
+    ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
+    ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
     plt.legend(fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
-    plt.xlim(imp_rads[60],imp_rads[119])
+    #plt.xlim(0,1.284)
+    plt.xlim(0,1.2849)
+    #plt.xlim(imp_rads[60],imp_rads[119])

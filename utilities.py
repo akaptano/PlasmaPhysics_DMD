@@ -54,13 +54,15 @@ def SVD(dict):
     getshape = np.shape(data)[0]
     if dict['use_IMP']:
         if dict['num_IMPs'] == 8:
-            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::10,:]
-            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::10,:]
-            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::10,:]
+            skip = 65
+            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
+            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
+            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
         if dict['num_IMPs'] == 32:
-            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::1,:]
-            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::1,:]
-            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::1,:]
+            skip = 1
+            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
+            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
+            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
         dict['imp_Bpol'] = dict['imp_Bpol']
         dict['imp_Btor'] = dict['imp_Btor']
         dict['imp_Brad'] = dict['imp_Brad']
@@ -83,6 +85,9 @@ def SVD(dict):
         data[0:3,:] = data[0:3,:]*mu0
     else:
         data[0:2,:] = data[0:2,:]*mu0
+    # For forecasting
+    #dict['full_data'] = data[:,t0:tf]
+    #data = data[:,t0:t0+int(tf/2)-1]
     data = data[:,t0:tf]
     noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
     data_sub = data #+noise
@@ -225,7 +230,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
-        skip = 10
+        skip = 65
     elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
@@ -459,3 +464,62 @@ def fourier_calc(nmax,tsize,b,phi):
             np.sqrt(veca[m+1, :]**2 + vecb[m, :]**2)
         phases[m+1,:] = np.arctan2(vecb[m, :], veca[m+1, :])
     return amps
+
+## Plots the toroidal current for a shot
+# @param dict A psi-tet dictionary
+def plot_itor(dict):
+    itor = dict['tcurr']/1000.0
+    t0 = dict['t0']
+    tf = dict['tf']
+    time = dict['time']*1000.0
+    plt.figure(75000,figsize=(figx, figy))
+    plt.plot(time,itor,'k',linewidth=lw)
+    plt.legend(fontsize=ls,loc='upper right',ncol=2)
+    plt.axvline(x=time[t0],color='k')
+    plt.axvline(x=time[tf],color='k')
+    plt.xlabel('Time (ms)', fontsize=fs)
+    plt.ylabel(r'$I_{tor}$ (kA)', fontsize=fs)
+    plt.grid(True)
+    ax = plt.gca()
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.savefig(out_dir+'toroidal_current.png')
+
+## Plots the BD chronos for a shot
+# @param dict A psi-tet dictionary
+def plot_chronos(dict):
+    Vh = np.transpose(np.conj(dict['V']))
+    S = dict['S']
+    t0 = dict['t0']
+    tf = dict['tf']
+    time = dict['sp_time'][t0:tf]*1000.0
+    alphas = np.flip(np.linspace(0.3,1.0,3))
+    plt.figure(85000,figsize=(figx, figy))
+    for i in range(3):
+        plt.plot(time,S[i]*Vh[i,:]*1e4/S[0],'m',linewidth=lw, alpha=alphas[i], \
+            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+            pe.Normal()],label='Mode '+str(i+1))
+    plt.legend(fontsize=ls,loc='lower left')
+    #plt.axvline(x=time[t0],color='k')
+    #plt.axvline(x=time[tf],color='k')
+    plt.xlabel('Time (ms)', fontsize=fs)
+    h = plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}V_{ki}^*$', fontsize=fs)
+    h.set_rotation(0)
+    plt.grid(True)
+    ax = plt.gca()
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.savefig(out_dir+'BD_chronos.png')
+    plt.figure(95000,figsize=(figx, figy))
+    plt.semilogy(range(1,len(S)+1),S/S[0],'mo',markersize=ms,markeredgecolor='k')
+    plt.semilogy(range(1,len(S)+1),S/S[0],'m')
+    #plt.axvline(x=time[t0],color='k')
+    #plt.axvline(x=time[tf],color='k')
+    plt.xlabel('Mode Number k', fontsize=fs)
+    h = plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}$', fontsize=fs)
+    h.set_rotation(0)
+    plt.grid(True)
+    ax = plt.gca()
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+    plt.savefig(out_dir+'BD.png')
