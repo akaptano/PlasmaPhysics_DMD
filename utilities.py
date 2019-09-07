@@ -54,7 +54,7 @@ def SVD(dict):
     getshape = np.shape(data)[0]
     if dict['use_IMP']:
         if dict['num_IMPs'] == 8:
-            skip = 65
+            skip = 23
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
             dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
             dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
@@ -63,9 +63,6 @@ def SVD(dict):
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
             dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
             dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
-        dict['imp_Bpol'] = dict['imp_Bpol']
-        dict['imp_Btor'] = dict['imp_Btor']
-        dict['imp_Brad'] = dict['imp_Brad']
         data = np.vstack((data,dict['imp_Bpol']))
         shape1 = np.shape(dict['imp_Bpol'])[0]
         shape2 = np.shape(dict['imp_Btor'])[0]
@@ -159,6 +156,7 @@ def toroidal_modes_sp(dict,dmd_flag):
         color = 'g'
 
     tsize = len(t_vec)
+    print(t_vec[tsize-16])
     phi = midphi
     nmax = 7
     amps = fourier_calc(nmax,tsize,Bfield_anom,phi)
@@ -181,8 +179,9 @@ def toroidal_modes_sp(dict,dmd_flag):
     dict['toroidal_amps'] = amps
     plt.figure(60000,figsize=(figx, figy))
     plt.title('Surface Probes', fontsize=fs)
-    plt.bar(range(nmax+1),amps[:,0]*1e4,color=color,edgecolor='k')
-    plt.xlabel('Toroidal Mode',fontsize=fs)
+    for m in range(nmax+1):
+        plt.bar(m,amps[m,tsize-16]*1e4,edgecolor='k')
+    plt.xlabel(r'$n_\phi$',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
     ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7])
@@ -230,7 +229,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
-        skip = 65
+        skip = 23
     elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
@@ -254,7 +253,7 @@ def toroidal_modes_imp(dict,dmd_flag):
             for m in range(nmax+1):
                 plt.plot(t_vec*1000, \
                     amps[m,k,:]/amax, \
-                    label='n = '+str(m), \
+                    label=r'$n_\phi$ = '+str(m), \
                     linewidth=3)
             plt.ylim(-1,1)
             ax = plt.gca()
@@ -281,20 +280,23 @@ def toroidal_modes_imp(dict,dmd_flag):
                 ax.set_yticks([])
                 if subcount >= 13:
                     plt.xlabel('Time (ms)',fontsize=ts)
+                    ax.set_xticks([26.8,27.1])
                 else:
                     ax.set_xticks([])
                 subcount = subcount+1
     plt.savefig(out_dir+'toroidal_amps_imp.png')
 
     plt.figure(170000,figsize=(figx, figy))
-    avg_amps = np.mean(abs(amps),axis=1)
+    avg_amps = np.mean(amps,axis=1)
+    #avg_amps = np.mean(abs(amps),axis=1)
     for m in range(nmax+1):
         plt.plot(t_vec*1000, \
-            avg_amps[m,:],label='n = '+str(m), \
+            avg_amps[m,:]*1e4,label=r'$n_\phi =$ '+str(m), \
             linewidth=lw)
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.title('Average of IMPs', fontsize=fs)
-    plt.ylabel(r'$\delta B$', fontsize=fs)
+    h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
+    plt.legend(fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
@@ -303,11 +305,15 @@ def toroidal_modes_imp(dict,dmd_flag):
     dict['toroidal_amps'] = avg_amps
     plt.figure(180000,figsize=(figx, figy))
     plt.title('Average of IMP Probes', fontsize=fs)
-    plt.bar(range(nmax+1),avg_amps[:,0]*1e4,color=color,edgecolor='k')
-    plt.xlabel('Toroidal Mode',fontsize=fs)
+    for m in range(nmax+1):
+        plt.bar(m,avg_amps[m,tsize-16]*1e4,edgecolor='k')
+    plt.xlabel(r'$n_\phi$',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
-    ax.set_xticks([0, 1, 2, 3])
+    if num_IMPs == 8:
+        ax.set_xticks([0, 1, 2, 3])
+    if num_IMPs == 32:
+        ax.set_xticks([0,1,2,3,4,5,6,7,8,9,10])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.png')
@@ -381,11 +387,11 @@ def poloidal_modes(dict,dmd_flag):
         plt.subplot(2,2,i+1)
         for m in range(nmax+1):
             plt.plot(t_vec*1000, \
-            amps[m,:],label='m = '+str(m),
+            amps[m,:]*1e4,label=r'$m_\theta$ = '+str(m),
             linewidth=lw)
         plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs)
         if i == 0 or i == 2:
-            plt.ylabel(r'$\delta B$', fontsize=fs)
+            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
         if i >= 2:
             plt.xlabel('Time (ms)',fontsize=fs)
         plt.grid(True)
@@ -397,12 +403,16 @@ def poloidal_modes(dict,dmd_flag):
         plt.figure(70000,figsize=(figx, figy))
         plt.subplot(2,2,i+1)
         plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs)
-        plt.bar(range(nmax+1),amps[:,0]*1e4,color=color,edgecolor='k')
+        for m in range(nmax+1):
+            plt.bar(m,amps[m,tsize-16]*1e4,edgecolor='k')
         if i == 0 or i == 2:
-            plt.ylabel('B (G)', fontsize=fs)
+            #plt.ylabel('B (G)', fontsize=fs)
+            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
         if i >= 2:
-            plt.xlabel('Poloidal Mode',fontsize=fs)
+            plt.xlabel(r'$m_\theta$',fontsize=fs)
+        plt.ylim(-50,220)
         ax = plt.gca()
+        ax.set_yticks([-50,0,100,200])
         ax.set_xticks([0,1,2,3,4,5,6,7])
         ax.set_xticklabels(['0','1','2','3','4','5','6','7'])
         ax.tick_params(axis='both', which='major', labelsize=ts)

@@ -100,8 +100,8 @@ def DMD_slide(total,numwindows,dmd_flag):
                 equilIndex = np.ravel(equilIndex).tolist()
                 injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
-                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
+                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
                 anomIndex = np.setdiff1d(anomIndex1,injIndex)
                 #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                 #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
@@ -553,7 +553,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-5
+    eps_stall = 1e-10
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
@@ -565,7 +565,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     tsize = len(time)
     dt = time[1]-time[0]
     # initialize values
-    #omega = np.ravel(dict['omega'])
+    #omega = np.ravel(dict['sparse_omega'])
     omega = dict['omega_init']
     osort = np.argsort(np.real(omega))
     print(omega[osort]/(2*pi*1000.0))

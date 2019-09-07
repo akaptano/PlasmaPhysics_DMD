@@ -476,7 +476,7 @@ def make_reconstructions(dict,dmd_flag):
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
     if dict['num_IMPs'] == 8:
-    	imp_index = size_bpol+size_btor+2
+    	imp_index = size_bpol+size_btor+4
     elif dict['num_IMPs'] == 32:
     	imp_index = size_bpol+size_btor+80
     inj_index = 2
@@ -580,7 +580,7 @@ def toroidal_plot(dict,dmd_flag):
     for i in range(num_IMPs):
         if num_IMPs == 8:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
-          skip = 65
+          skip = 23
         elif num_IMPs == 32:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
           skip = 1
