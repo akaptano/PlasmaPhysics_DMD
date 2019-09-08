@@ -232,6 +232,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
 # @param numwindows Number of sliding windows
 # @param dmd_flag Flag to indicate what type of dmd algorithm is being used
 def dmd_animation(dict,numwindows,dmd_flag):
+    FPS = 5
     f_1 = dict['f_1']
     t0 = dict['t0']
     tf = dict['tf']
@@ -260,8 +261,8 @@ def dmd_animation(dict,numwindows,dmd_flag):
         fig = plt.figure(5000+dmd_flag,figsize=(figx, figy))
         ani = animation.FuncAnimation( \
             fig, dmd_update, range(numwindows), \
-            fargs=(dict,f_1,windowsize, \
-                numwindows,starts,ends,typename,dmd_flag),
+            fargs=(dict,windowsize, \
+                numwindows,starts,ends,dmd_flag),
                 repeat=False, \
                 interval=100, blit=False)
         ani.save(moviename,fps=FPS)
