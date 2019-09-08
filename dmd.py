@@ -19,7 +19,7 @@ def DMD_slide(total,numwindows,dmd_flag):
         t0 = dict['t0']
         tf = dict['tf']
         data = np.copy(dict['SVD_data'])
-        time = dict['sp_time'][t0:tf-1]
+        time = dict['sp_time'][t0:tf]
         dt = dict['sp_time'][1] - dict['sp_time'][0]
         r = np.shape(data)[0]
         tsize = np.shape(data)[1]
@@ -553,7 +553,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-10
+    eps_stall = 1e-4
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]

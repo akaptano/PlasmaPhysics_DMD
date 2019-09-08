@@ -773,20 +773,20 @@ def spec_3D(dict,numwindows,dmd_flag):
     fig = plt.figure(30000,figsize=(figx, figy))
     ax = fig.gca(projection='3d')
     plt.grid(True)
-    num_signals = np.shape(Bfield[:,starts[i]:ends[i]])[0]
-    nseg = int((tf-t0)/numwindows)
-    spectros=np.zeros((66,numwindows))
+    num_signals = np.shape(Bfield)[0]
+    #nseg = int((tf-t0)/numwindows)
+    spectros=np.zeros((76,numwindows))
     #spectros=np.zeros((113,numwindows))
     sample_freq = 1.0/dict['dt']
     for j in range(num_signals):
         freq, stime, spec = spectrogram( \
-            np.real(Bfield[j,:numwindows*nseg]), \
+            np.real(Bfield[j,:]), \
             sample_freq, \
-            nperseg=nseg, \
-            scaling='spectrum', \
-            noverlap=0)
+            scaling='spectrum')
+            #nperseg=nseg,
+            #noverlap=0)
         spectros += spec
-    pcm = ax.plot_surface(t,delta/1e3,freq/1e3,cmap=colormap)
+    pcm = ax.plot_surface(stime,delta/1e3,freq/1e3,cmap=colormap)
     #for starti in range(len(starts)):
     #    plt.axvline(dict['sp_time'][t0+starts[starti]]*1000,color='k')
     #plt.axvline(dict['sp_time'][t0+ends[i]]*1000,color='k')
@@ -805,4 +805,4 @@ def spec_3D(dict,numwindows,dmd_flag):
     plt.zlabel(r'f (kHz)',fontsize=fs)
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-
+    plt.savefig(out_dir+'spec_3d.png')
