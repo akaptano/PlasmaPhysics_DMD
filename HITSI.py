@@ -12,7 +12,7 @@ from utilities import SVD, \
 from dmd import DMD_slide, DMD_forecast
 from dmd_plotting import \
     make_reconstructions, \
-    dmd_animation, \
+    dmd_animation, spec_3D, \
     toroidal_plot
 import click
 
@@ -130,7 +130,8 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
                     if k == len(dmd)-1:
                         toroidal_plot(total[0],dmd[k])
                 if animate_dmd:
-                    dmd_animation(total[0],numwindows,dmd[k])
+                    #dmd_animation(total[0],numwindows,dmd[k])
+                    spec_3D(total[0],numwindows,dmd[k])
             else:
                 print('Invalid --dmd option, will assume no dmd')
 

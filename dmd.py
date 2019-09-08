@@ -100,7 +100,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 equilIndex = np.ravel(equilIndex).tolist()
                 injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
+                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
                 #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
                 anomIndex = np.setdiff1d(anomIndex1,injIndex)
                 #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
@@ -534,7 +534,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     ##   of steps used in the inner Levenberg loop,
     ##   i.e. the number of times you increase lambda
     ##   before quitting
-    maxlam = 20
+    maxlam = 40
     ## Factor by which
     ##   you increase lambda when searching for an
     ##   appropriate step
@@ -545,7 +545,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 100
+    maxiter = 500
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol

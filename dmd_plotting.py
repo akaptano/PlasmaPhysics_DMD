@@ -8,6 +8,7 @@ from scipy.signal import spectrogram
 from map_probes import \
     sp_name_dict, imp_name_dict, \
     imp_rads, imp_phis8, imp_phis32
+from mpl_toolkits.mplot3d import Axes3D
 
 ## Plots the power spectrum for the DMD
 # @param b The bs determined from any DMD algorithm
@@ -476,7 +477,7 @@ def make_reconstructions(dict,dmd_flag):
     size_btor = np.shape(dict['sp_Btor'])[0]
     index = size_bpol
     if dict['num_IMPs'] == 8:
-    	imp_index = size_bpol+size_btor+4
+    	imp_index = size_bpol+size_btor+1
     elif dict['num_IMPs'] == 32:
     	imp_index = size_bpol+size_btor+80
     inj_index = 2
@@ -567,7 +568,7 @@ def toroidal_plot(dict,dmd_flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 2
+    tstep = 1
     FPS = 4
     offset = 2
     if dict['is_HITSI3']:
@@ -580,7 +581,7 @@ def toroidal_plot(dict,dmd_flag):
     for i in range(num_IMPs):
         if num_IMPs == 8:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
-          skip = 23
+          skip = 40
         elif num_IMPs == 32:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
           skip = 1
@@ -631,8 +632,16 @@ def toroidal_plot(dict,dmd_flag):
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
     fig = plt.figure(figsize=(figx, figy))
-    rorig = np.ravel([rads_imp[::skip], rads_imp[::skip], rads_imp[::skip]])
-    phiorig = np.ravel([phis_imp[::skip]-2*pi, phis_imp[::skip], phis_imp[::skip]+2*pi])
+    rimp = rads_imp[::skip]
+    pimp = phis_imp[::skip]
+    if num_IMPs==8:
+        bindices = slice(0,29,4)
+        indices = list(range(0,32))
+        del indices[bindices]
+        rimp = rimp[indices] 
+        pimp = pimp[indices]
+    rorig = np.ravel([rimp, rimp, rimp])
+    phiorig = np.ravel([pimp-2*pi, pimp, pimp+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
     moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
@@ -724,8 +733,8 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
         [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
         markersize=ms,markeredgecolor='k',label='Y Injector Mouths')
-    ax.set_yticks([0,pi/2,pi,3*pi/2,2*pi])
-    ax.set_yticklabels(clabels)
+    ax.set_yticks([pi/2,pi,3*pi/2,2*pi])
+    ax.set_yticklabels(clabels[1:])
     ax.tick_params(axis='x', which='major', labelsize=ts)
     ax.tick_params(axis='x', which='minor', labelsize=ts)
     ax.tick_params(axis='y', which='major', labelsize=ts+10)
@@ -742,10 +751,58 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
     cbar = plt.colorbar(ticks=v,extend='both')
     cbar.ax.tick_params(labelsize=ts)
-    ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
-    ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
+    #ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
+    #ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
+    ax.set_xticks([0.37,0.7,1.05])
+    ax.set_xticklabels([0.37,0.7,1.05])
     plt.legend(fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
-    #plt.xlim(0,1.284)
-    plt.xlim(0,1.2849)
+    #plt.xlim(0,1.2849)
+    plt.xlim(0.3678,1.052)
     #plt.xlim(imp_rads[60],imp_rads[119])
+
+def spec_3D(dict,numwindows,dmd_flag):
+    f_1 = dict['f_1']
+    if dmd_flag == 1:
+        Bfield = dict['Bfield']
+    if dmd_flag == 2:
+        Bfield = dict['sparse_Bfield']
+    if dmd_flag == 3:
+        Bfield = dict['optimized_Bfield']
+ 
+    fig = plt.figure(30000,figsize=(figx, figy))
+    ax = fig.gca(projection='3d')
+    plt.grid(True)
+    num_signals = np.shape(Bfield[:,starts[i]:ends[i]])[0]
+    nseg = int((tf-t0)/numwindows)
+    spectros=np.zeros((66,numwindows))
+    #spectros=np.zeros((113,numwindows))
+    sample_freq = 1.0/dict['dt']
+    for j in range(num_signals):
+        freq, stime, spec = spectrogram( \
+            np.real(Bfield[j,:numwindows*nseg]), \
+            sample_freq, \
+            nperseg=nseg, \
+            scaling='spectrum', \
+            noverlap=0)
+        spectros += spec
+    pcm = ax.plot_surface(t,delta/1e3,freq/1e3,cmap=colormap)
+    #for starti in range(len(starts)):
+    #    plt.axvline(dict['sp_time'][t0+starts[starti]]*1000,color='k')
+    #plt.axvline(dict['sp_time'][t0+ends[i]]*1000,color='k')
+    #plt.axvline(dict['sp_time'][t0+starts]*1000,color='k')
+    try:
+        cb=ax.collections[-2].colorbar
+        cb.remove()
+    except:
+        print("nothing to remove")
+    #cb = plt.colorbar(pcm,ticks=[1e-8,1e-6,1e-4,1e-2])
+    #cb = plt.colorbar(pcm,ticks=[1e-8,1e-6,1e-4,1e-2,1e0])
+    #cb.ax.tick_params(labelsize=ts)
+    #plt.ylim(0,100)
+    plt.xlabel('Time (ms)',fontsize=fs)
+    plt.ylabel(r'$\delta$ (kHz)',fontsize=fs)
+    plt.zlabel(r'f (kHz)',fontsize=fs)
+    ax.tick_params(axis='both', which='major', labelsize=ts)
+    ax.tick_params(axis='both', which='minor', labelsize=ts)
+
