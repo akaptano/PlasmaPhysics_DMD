@@ -55,16 +55,16 @@ def SVD(dict):
     getshape = np.shape(data)[0]
     if dict['use_IMP']:
         if dict['num_IMPs'] == 8:
-            skip = 47
+            skip = 40
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
             dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
             dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
-            #bindices = slice(0,29,4)
-            #indices = list(range(0,32))
-            #del indices[bindices]
-            #dict['imp_Bpol'] = dict['imp_Bpol'][indices,:]
-            #dict['imp_Btor'] = dict['imp_Btor'][indices,:]
-            #dict['imp_Brad'] = dict['imp_Brad'][indices,:]
+            bindices = slice(0,29,4)
+            indices = list(range(0,32))
+            del indices[bindices]
+            dict['imp_Bpol'] = dict['imp_Bpol'][indices,:]
+            dict['imp_Btor'] = dict['imp_Btor'][indices,:]
+            dict['imp_Brad'] = dict['imp_Brad'][indices,:]
         if dict['num_IMPs'] == 32:
             skip = 1
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
@@ -236,7 +236,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
-        skip = 47
+        skip = 40
     elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
@@ -253,10 +253,10 @@ def toroidal_modes_imp(dict,dmd_flag):
     subcount = 1
     plt.figure(figsize=(figx, figy))
     if num_IMPs == 8:
-        #bindices = slice(0,29,4)
-        #indices = list(range(0,32))
-        #del indices[bindices]
-        #phis = phis[indices] 
+        bindices = slice(0,29,4)
+        indices = list(range(0,32))
+        del indices[bindices]
+        phis = phis[indices] 
         for k in range(3):
             plt.figure(figsize=(figx, figy))
             amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::3,:],phis[k::3])
@@ -313,7 +313,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.title('Average of IMPs', fontsize=fs)
     h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
-    plt.legend(fontsize=ls-10,loc='upper left')
+    #plt.legend(fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)

@@ -528,7 +528,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     ##   value used for the regularization parameter
     ##   lambda in the Levenberg method (a larger
     ##   lambda makes it more like gradient descent)
-    lambda0 = 1.0
+    lambda0 = 1e0
     ## Maximum number
     ##   of steps used in the inner Levenberg loop,
     ##   i.e. the number of times you increase lambda
@@ -544,7 +544,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 500
+    maxiter = 1000
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol
