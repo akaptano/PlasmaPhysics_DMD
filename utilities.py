@@ -273,6 +273,7 @@ def toroidal_modes_imp(dict,dmd_flag):
             plt.xlabel('Time (ms)',fontsize=fs)
             ax.set_xticks([26.8,27.1])
             plt.ylim(-40,60)
+            plt.grid(True)
             plt.ylabel('B (G)',fontsize=fs)
             plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.png')
     elif num_IMPs == 32:
