@@ -55,16 +55,16 @@ def SVD(dict):
     getshape = np.shape(data)[0]
     if dict['use_IMP']:
         if dict['num_IMPs'] == 8:
-            skip = 40
+            skip = 47
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
             dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
             dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
-            bindices = slice(0,29,4)
-            indices = list(range(0,32))
-            del indices[bindices]
-            dict['imp_Bpol'] = dict['imp_Bpol'][indices,:]
-            dict['imp_Btor'] = dict['imp_Btor'][indices,:]
-            dict['imp_Brad'] = dict['imp_Brad'][indices,:]
+            #bindices = slice(0,29,4)
+            #indices = list(range(0,32))
+            #del indices[bindices]
+            #dict['imp_Bpol'] = dict['imp_Bpol'][indices,:]
+            #dict['imp_Btor'] = dict['imp_Btor'][indices,:]
+            #dict['imp_Brad'] = dict['imp_Brad'][indices,:]
         if dict['num_IMPs'] == 32:
             skip = 1
             dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
@@ -163,7 +163,7 @@ def toroidal_modes_sp(dict,dmd_flag):
         color = 'g'
 
     tsize = len(t_vec)
-    print(t_vec[tsize-16])
+    print(t_vec[0])
     phi = midphi
     nmax = 7
     amps = fourier_calc(nmax,tsize,Bfield_anom,phi)
@@ -236,7 +236,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     if num_IMPs == 8:
         imp_phis = imp_phis8
         nmax = 3
-        skip = 40
+        skip = 47
     elif num_IMPs == 32:
         imp_phis = imp_phis32
         nmax = 10
@@ -251,33 +251,30 @@ def toroidal_modes_imp(dict,dmd_flag):
     phis = phis[:len(phis)]
     amps = np.zeros((nmax+1,160,tsize))
     subcount = 1
-    plt.figure(figsize=(figx+2, figy+2))
+    plt.figure(figsize=(figx, figy))
     if num_IMPs == 8:
-        bindices = slice(0,29,4)
-        indices = list(range(0,32))
-        del indices[bindices]
-        phis = phis[indices] 
+        #bindices = slice(0,29,4)
+        #indices = list(range(0,32))
+        #del indices[bindices]
+        #phis = phis[indices] 
         for k in range(3):
+            plt.figure(figsize=(figx, figy))
             amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::3,:],phis[k::3])
             amax = np.max(np.max(amps[:,k,:]))
-            plt.subplot(1,3,k+1)
             for m in range(nmax+1):
                 plt.plot(t_vec*1000, \
                     amps[m,k,:]*1e4, \
                     label=r'$n_\phi$ = '+str(m), \
                     linewidth=3)
-            plt.ylim(-1,1)
             ax = plt.gca()
-            ax.tick_params(axis='both', which='major', labelsize=ts-6)
-            ax.tick_params(axis='both', which='minor', labelsize=ts-6)
-            plt.title('R = {0:.2f} m'.format(imp_rads[40*(k+1)]),fontsize=ts)
-            plt.xlabel('Time (ms)',fontsize=ts)
+            ax.tick_params(axis='both', which='major', labelsize=ts)
+            ax.tick_params(axis='both', which='minor', labelsize=ts)
+            plt.title('R = {0:.2f} m'.format(imp_rads[40*(k+1)]),fontsize=fs)
+            plt.xlabel('Time (ms)',fontsize=fs)
             ax.set_xticks([26.8,27.1])
             plt.ylim(-40,60)
-            if k == 0:
-                plt.ylabel('B (G)',fontsize=ts)
-            else:
-                ax.set_yticks([])
+            plt.ylabel('B (G)',fontsize=fs)
+            plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.png')
     elif num_IMPs == 32:
         for k in range(160):
             amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])

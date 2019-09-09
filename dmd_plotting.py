@@ -582,7 +582,7 @@ def toroidal_plot(dict,dmd_flag):
     for i in range(num_IMPs):
         if num_IMPs == 8:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
-          skip = 40
+          skip = 47
         elif num_IMPs == 32:
           phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
           skip = 1
@@ -635,12 +635,12 @@ def toroidal_plot(dict,dmd_flag):
     fig = plt.figure(figsize=(figx, figy))
     rimp = rads_imp[::skip]
     pimp = phis_imp[::skip]
-    if num_IMPs==8:
-        bindices = slice(0,29,4)
-        indices = list(range(0,32))
-        del indices[bindices]
-        rimp = rimp[indices] 
-        pimp = pimp[indices]
+    #if num_IMPs==8:
+        #bindices = slice(0,29,4)
+        #indices = list(range(0,32))
+        #del indices[bindices]
+        #rimp = rimp[indices] 
+        #pimp = pimp[indices]
     rorig = np.ravel([rimp, rimp, rimp])
     phiorig = np.ravel([pimp-2*pi, pimp, pimp+2*pi])
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
