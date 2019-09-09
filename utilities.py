@@ -316,7 +316,7 @@ def toroidal_modes_imp(dict,dmd_flag):
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.title('Average of IMPs', fontsize=fs)
     h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
-    plt.legend(fontsize=ls-10,loc='upper left')
+    #plt.legend(fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
