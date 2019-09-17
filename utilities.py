@@ -163,7 +163,7 @@ def toroidal_modes_sp(dict,dmd_flag):
         color = 'g'
 
     tsize = len(t_vec)
-    print(t_vec[0])
+    print(t_vec[tsize-2])
     phi = midphi
     nmax = 7
     amps = fourier_calc(nmax,tsize,Bfield_anom,phi)
@@ -187,7 +187,7 @@ def toroidal_modes_sp(dict,dmd_flag):
     plt.figure(60000,figsize=(figx, figy))
     plt.title('Surface Probes', fontsize=fs)
     for m in range(nmax+1):
-        plt.bar(m,amps[m,tsize-16]*1e4,edgecolor='k')
+        plt.bar(m,amps[m,tsize-2]*1e4,edgecolor='k')
     plt.xlabel(r'$n_\phi$',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
@@ -317,21 +317,25 @@ def toroidal_modes_imp(dict,dmd_flag):
     #plt.legend(fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
+    ax.set_xticks([26.8,27.1])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_imp.png')
     dict['toroidal_amps'] = avg_amps
     plt.figure(180000,figsize=(figx, figy))
     plt.title('Average of IMP Probes', fontsize=fs)
-    for m in range(nmax+1):
-        plt.bar(m,avg_amps[m,tsize-16]*1e4,edgecolor='k')
+    for m in range(11):
+        if m < nmax+1:
+            plt.bar(m,avg_amps[m,tsize-2]*1e4,edgecolor='k')
+        else:
+            plt.bar(m,0.0,edgecolor='k')
     plt.xlabel(r'$n_\phi$',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
-    if num_IMPs == 8:
-        ax.set_xticks([0, 1, 2, 3])
-    if num_IMPs == 32:
-        ax.set_xticks([0,1,2,3,4,5,6,7,8,9,10])
+    #if num_IMPs == 8:
+    #    ax.set_xticks([0, 1, 2, 3])
+    #if num_IMPs == 32:
+    ax.set_xticks([0,1,2,3,4,5,6,7,8,9,10])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.png')
@@ -407,34 +411,34 @@ def poloidal_modes(dict,dmd_flag):
             plt.plot(t_vec*1000, \
             amps[m,:]*1e4,label=r'$m_\theta$ = '+str(m),
             linewidth=lw)
-        plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs)
+        plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs-10)
         if i == 0 or i == 2:
-            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
+            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs-10)
         if i >= 2:
-            plt.xlabel('Time (ms)',fontsize=fs)
+            plt.xlabel('Time (ms)',fontsize=fs-10)
         plt.grid(True)
         ax = plt.gca()
-        ax.tick_params(axis='both', which='major', labelsize=ts)
-        ax.tick_params(axis='both', which='minor', labelsize=ts)
+        ax.tick_params(axis='both', which='major', labelsize=ts-10)
+        ax.tick_params(axis='both', which='minor', labelsize=ts-10)
         plt.savefig(out_dir+'poloidal_amps.png')
         dict['poloidal_amps'] = amps
         plt.figure(70000,figsize=(figx, figy))
         plt.subplot(2,2,i+1)
-        plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs)
+        plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs-10)
         for m in range(nmax+1):
-            plt.bar(m,amps[m,tsize-16]*1e4,edgecolor='k')
+            plt.bar(m,amps[m,tsize-2]*1e4,edgecolor='k')
         if i == 0 or i == 2:
             #plt.ylabel('B (G)', fontsize=fs)
-            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
+            plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs-10)
         if i >= 2:
-            plt.xlabel(r'$m_\theta$',fontsize=fs)
+            plt.xlabel(r'$m_\theta$',fontsize=fs-10)
         plt.ylim(-50,220)
         ax = plt.gca()
         ax.set_yticks([-50,0,100,200])
         ax.set_xticks([0,1,2,3,4,5,6,7])
         ax.set_xticklabels(['0','1','2','3','4','5','6','7'])
-        ax.tick_params(axis='both', which='major', labelsize=ts)
-        ax.tick_params(axis='both', which='minor', labelsize=ts)
+        ax.tick_params(axis='both', which='major', labelsize=ts-12)
+        ax.tick_params(axis='both', which='minor', labelsize=ts-12)
         plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.png')
 
 ## Performs the fourier calculation based on Wrobel 2011

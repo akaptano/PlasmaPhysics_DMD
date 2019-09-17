@@ -60,7 +60,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
     plt.yscale('log')
     #plt.legend(loc='upper left',fontsize=ls-8,ncol=3)
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
-    plt.xlabel('f (kHz)',fontsize=fs)
+    plt.xlabel(r'$f_k$ (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
     h=plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     plt.xlabel(r'f (kHz)',fontsize=fs+4)
@@ -82,8 +82,8 @@ def power_spectrum(b,omega,f_1,filename,typename):
     #ax.set_yticklabels([1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
         f_1,2*f_1,3*f_1])
-    ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$',0, \
-        r'$f_1$',r'$f_2$',r'$f_3$'])
+    ax.set_xticklabels([r'$-f_3^{inj}$',r'$-f_2^{inj}$',r'$-f_1^{inj}$',0, \
+        r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$'])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.grid(True)
@@ -734,8 +734,8 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
         [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
         markersize=ms,markeredgecolor='k',label='Y Injector Mouths')
-    ax.set_yticks([pi/2,pi,3*pi/2,2*pi])
-    ax.set_yticklabels(clabels[1:])
+    ax.set_yticks([0,pi/2,pi,3*pi/2,2*pi])
+    ax.set_yticklabels(clabels)
     ax.tick_params(axis='x', which='major', labelsize=ts)
     ax.tick_params(axis='x', which='minor', labelsize=ts)
     ax.tick_params(axis='y', which='major', labelsize=ts+10)
@@ -752,14 +752,16 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
     cbar = plt.colorbar(ticks=v,extend='both')
     cbar.ax.tick_params(labelsize=ts)
-    #ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
-    #ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
-    ax.set_xticks([0.37,0.7,1.05])
-    ax.set_xticklabels([0.37,0.7,1.05])
+    ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
+    ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
+    ax.fill_between([1.052,1.2849],0,2*pi,facecolor='k',alpha=0.8)
+    ax.fill_between([0.0,0.368],0,2*pi,facecolor='k',alpha=0.8)
+    #ax.set_xticks([0.37,0.7,1.05])
+    #ax.set_xticklabels([0.37,0.7,1.05])
     plt.legend(fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
-    #plt.xlim(0,1.2849)
-    plt.xlim(0.3678,1.052)
+    plt.xlim(0,1.2849)
+    #plt.xlim(0.3678,1.052)
     #plt.xlim(imp_rads[60],imp_rads[119])
 
 def spec_3D(dict,numwindows,dmd_flag):
