@@ -58,12 +58,11 @@ def power_spectrum(b,omega,f_1,filename,typename):
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
     plt.yscale('log')
-    #plt.legend(loc='upper left',fontsize=ls-8,ncol=3)
+    #plt.legend(edgecolor='k',facecolor='wheat',loc='upper left',fontsize=ls-8,ncol=3)
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     plt.xlabel(r'$f_k$ (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
     h=plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
-    plt.xlabel(r'f (kHz)',fontsize=fs+4)
     #plt.xlim(-120,120)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -125,12 +124,11 @@ def power_spectrum(b,omega,f_1,filename,typename):
             label=typename,alpha=alpha, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    plt.legend(loc='lower left',fontsize=ls-10,ncol=5)
+    plt.legend(edgecolor='k',facecolor='wheat',loc='lower left',fontsize=ls-4)
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
-    plt.xlabel('f (kHz)',fontsize=fs)
+    plt.xlabel(r'$f_k$ (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
     h=plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
-    plt.xlabel(r'f (kHz)',fontsize=fs+4)
     #plt.xlim(-120,120)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -144,18 +142,21 @@ def power_spectrum(b,omega,f_1,filename,typename):
     #    f_1,3*f_1,5*f_1,120])
     #ax.set_xticklabels([-120,r'$-f_5$',r'$-f_3$',r'$-f_1$', \
     #    r'$f_1$',r'$f_3$',r'$f_5$',120])
-    plt.ylim((1e-23,1e0))
+    plt.ylim((1e-21,1e0))
     #ax.set_yticks([1e-12,1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     #ax.set_yticklabels([1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
         f_1,2*f_1,3*f_1])
-    ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$',0, \
-        r'$f_1$',r'$f_2$',r'$f_3$'])
+    ax.set_xticklabels([r'$-f_3^{inj}$',r'$-f_2^{inj}$',r'$-f_1^{inj}$',0, \
+        r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$'])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.grid(True)
     plt.yticks([1e-21,1e-14,1e-7,1e0])
-    plt.savefig(out_dir+filename)
+    plt.savefig(out_dir+filename+'.png')
+    plt.savefig(out_dir+filename+'.eps')
+    plt.savefig(out_dir+filename+'.pdf')
+    plt.savefig(out_dir+filename+'.svg')
 
 ## Plots real part vs imag part of the f_k frequencies
 # @param b The bs determined from any DMD algorithm
@@ -180,7 +181,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='b',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
-    elif typename=='sparse DMD':
+    elif typename=='sparse DMD' or typename[9] == '=':
         plt.subplot(4,1,3)
         for snum in range(len(delta_k)):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
@@ -199,23 +200,23 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.legend([h0.get_label()],fontsize=ts,loc='lower right')
-    plt.ylim(-1e3,1e0)
-    plt.yscale('symlog',linthreshy=1e-2)
+    plt.legend([h0.get_label()],edgecolor='k',facecolor='wheat',fontsize=ts,loc='upper right')
+    plt.ylim(-1e2,1e2)
+    plt.yscale('symlog',linthreshy=1e-1)
     ax = plt.gca()
-    ax.set_yticks([-1e3,-1,-1e-2,1e-2,1e0])
+    ax.set_yticks([-1e2,-1,0,1,1e2])
     plt.axhline(y=0,color='k',linewidth=3,linestyle='--')
     #ax.set_yticklabels([r'$-10^2$','',r'$-10^1$','',r'$-10^{-1}$','',0,'',r'$10^{-1}$','',r'$10^1$'])
     #plt.xscale('symlog')
     plt.ylabel(r'$\delta_k$ (kHz)',fontsize=fs+4)
     #plt.title(typename,fontsize=fs)
-    plt.xlim(-120,120)
-    #plt.xlim(-f_1*3,f_1*3)
+    #plt.xlim(-120,120)
+    plt.xlim(-f_1*3,f_1*3)
     plt.grid(True)
-    ax.set_xticks([-120,-5*f_1,-3*f_1,-f_1, \
-        f_1,3*f_1,5*f_1,120])
-    #ax.set_xticks([-3*f_1,-2*f_1,-f_1, \
-    #    0,f_1,2*f_1,3*f_1])
+    #ax.set_xticks([-120,-5*f_1,-3*f_1,-f_1, \
+    #    f_1,3*f_1,5*f_1,120])
+    ax.set_xticks([-3*f_1,-2*f_1,-f_1, \
+        0,f_1,2*f_1,3*f_1])
     ax.set_xticklabels([])
     #ax.set_xticklabels(['-100',r'$-f_5$',r'$-f_3$',r'$-f_1$', \
     #    '0',r'$f_1$',r'$f_3$',r'$f_5$','100'])
@@ -225,7 +226,10 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
     #ax.tick_params(axis='x', which='minor', labelsize=ts)
     ax.tick_params(axis='y', which='major', labelsize=ts)
     ax.tick_params(axis='y', which='minor', labelsize=ts)
-    plt.savefig(out_dir+filename)
+    plt.savefig(out_dir+filename+'.png')
+    plt.savefig(out_dir+filename+'.eps')
+    plt.savefig(out_dir+filename+'.pdf')
+    plt.savefig(out_dir+filename+'.svg')
 
 ## Creates a sliding window animation
 # @param dict A psi-tet dictionary
@@ -334,7 +338,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     #ax1.set_yticks([-500,0,500,1000])
     ax1.set_xticks([0,1,2])
     ax1.set_xticklabels([0,1,2])
-    plt.legend(fontsize=ls-10,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls-10,loc='upper left')
     delta_k = np.real(omega)/1000.0/(2*pi)
     f_k = np.imag(omega)/1000.0/(2*pi)
 
@@ -350,7 +354,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
          pe.Normal()])
 
     plt.yscale('log')
-    plt.legend(fontsize=ls-8,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls-8,loc='lower right')
     #plt.xlim(-100,100)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -517,13 +521,16 @@ def make_reconstructions(dict,dmd_flag):
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.legend(fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
     plt.ylabel('B (G)',fontsize=fs)
     #plt.ylim((-150,300))
     #ax.set_yticks([-150,0,150,300])
     plt.ylim((-500,600))
     ax.set_yticks([-500,0,500])
     plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.png')
+    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.eps')
+    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.pdf')
+    plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_sp.svg')
 
     plt.figure(3000,figsize=(figx, figy))
     if dmd_flag==1:
@@ -556,9 +563,12 @@ def make_reconstructions(dict,dmd_flag):
         ax = plt.gca()
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(fontsize=ls,loc='upper left')
+        plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
         plt.ylabel('B (G)',fontsize=fs)
         plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
+        plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.eps')
+        plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.pdf')
+        plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.svg')
 
 ## Makes (R,phi) contour plots of B_theta (poloidal B field)
 # @param dict A psi-tet dictionary
@@ -758,7 +768,7 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     ax.fill_between([0.0,0.368],0,2*pi,facecolor='k',alpha=0.8)
     #ax.set_xticks([0.37,0.7,1.05])
     #ax.set_xticklabels([0.37,0.7,1.05])
-    plt.legend(fontsize=ls-12,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
     plt.xlim(0,1.2849)
     #plt.xlim(0.3678,1.052)

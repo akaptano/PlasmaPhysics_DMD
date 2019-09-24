@@ -7,22 +7,22 @@ import time as Clock
 
 ## DMD routine, with sliding window,
 ## where we minimize |Xt - Vandermonde^T*B|_Frobenius
-# @param total A list of psi-tet dictionaries
+# @param total A list of psi-tet psi_dictionaries
 # @param numwindows Number of windows for the sliding window
 # @param dmd_flag Flag to indicate which DMD method to use
 def DMD_slide(total,numwindows,dmd_flag):
     fignum = len(total)*numwindows
     for k in range(len(total)):
-        dict = total[k]
-        f_1 = dict['f_1']
-        dictname = dict['filename']
-        t0 = dict['t0']
-        tf = dict['tf']
-        data = np.copy(dict['SVD_data'])
-        time = dict['sp_time'][t0:tf]
-        dt = dict['sp_time'][1] - dict['sp_time'][0]
+        psi_dict = total[k]
+        f_1 = psi_dict['f_1']
+        psi_dictname = psi_dict['filename']
+        t0 = psi_dict['t0']
+        tf = psi_dict['tf']
+        data = np.copy(psi_dict['SVD_data'])
+        time = psi_dict['sp_time'][t0:tf]
+        dt = psi_dict['sp_time'][1] - psi_dict['sp_time'][0]
         r = np.shape(data)[0]
-        tsize = np.shape(data)[1]
+        tsize = len(time)
         windowsize = int(np.floor(tsize/float(numwindows)))
         if numwindows==1:
             windowsize=windowsize-1
@@ -32,14 +32,14 @@ def DMD_slide(total,numwindows,dmd_flag):
             ends = starts + np.ones(numwindows,dtype='int')*windowsize
         else:
             print('windowsize > tsize, dmd invalid')
-        trunc = dict['trunc']
+        trunc = psi_dict['trunc']
         Bfield = np.zeros((r,tsize),dtype='complex')
         Bfield_inj = np.zeros((r,tsize),dtype='complex')
         Bfield_eq = np.zeros((r,tsize),dtype='complex')
         Bfield_anom = np.zeros((r,tsize),dtype='complex')
         dmd_b = []
         dmd_omega = []
-        gammas = [0.5]
+        gammas = [1e-1,1e0,1e1,1e2]
         for i in range(numwindows):
             for j in range(len(gammas)):
                 tbase = time[starts[i]:ends[i]]
@@ -68,14 +68,17 @@ def DMD_slide(total,numwindows,dmd_flag):
                     if dmd_flag == 2:
                         gamma = gammas[j]
                         b = sparse_algorithm(trunc,q,P,b,gamma)
-                        typename = 'sparse DMD'
-                        #typename = r'$\gamma$ = {0:.0E}'.format(gamma)
+                        #typename = 'sparse DMD'
+                        if gamma < 1:
+                            typename = r'$\gamma$ = {0:.1f}'.format(gamma)
+                        else:
+                            typename = r'$\gamma$ = {0:d}'.format(int(gamma))
                 elif dmd_flag == 3:
-                    initialize_variable_project(dict,data,trunc)
+                    initialize_variable_project(psi_dict,data,trunc)
                     # Time algorithm 2 from Askham/Kutz 2017
                     tic = Clock.time()
                     B,omega = variable_project( \
-                        np.transpose(X),dict,trunc,starts[i],ends[i])
+                        np.transpose(X),psi_dict,trunc,starts[i],ends[i])
                     toc = Clock.time()
                     print('time in variable_projection = ',toc-tic,' s')
                     Bt = np.transpose(B)
@@ -99,10 +102,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                 equilIndex = np.ravel(equilIndex).tolist()
                 injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.3))
-                anomIndex = np.setdiff1d(anomIndex1,injIndex)
-                #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                #    abs(np.imag(omega)/(2*pi)),14500*3,atol=2000)).nonzero()))
+                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.3))
+                #anomIndex = np.setdiff1d(anomIndex1,injIndex)
+                anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #anomIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
@@ -137,54 +140,54 @@ def DMD_slide(total,numwindows,dmd_flag):
                 err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
                     /np.linalg.norm(X,'fro')
                 print('Final error = ',err)
-                filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                filename = 'power_'+str(psi_dictname[:len(psi_dictname)-4])+'_'+str(i)
                 power_spectrum(b,omega,f_1,filename,typename)
-                filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                filename = 'phasePlot_'+str(psi_dictname[:len(psi_dictname)-4])+'_'+str(i)
                 freq_phase_plot(b,omega,f_1,filename,typename)
 
         if dmd_flag == 1:
-            dict['Bfield'] = Bfield
-            dict['Bfield_eq'] = Bfield_eq
-            dict['Bfield_inj'] = Bfield_inj
-            dict['Bfield_anom'] = Bfield_anom
-            dict['b'] = np.asarray(dmd_b)
-            dict['omega'] = np.asarray(dmd_omega)
-            dict['Bt'] = dmd_Bt
+            psi_dict['Bfield'] = Bfield
+            psi_dict['Bfield_eq'] = Bfield_eq
+            psi_dict['Bfield_inj'] = Bfield_inj
+            psi_dict['Bfield_anom'] = Bfield_anom
+            psi_dict['b'] = np.asarray(dmd_b)
+            psi_dict['omega'] = np.asarray(dmd_omega)
+            psi_dict['Bt'] = dmd_Bt
         elif dmd_flag == 2:
-            dict['sparse_Bfield'] = Bfield
-            dict['sparse_Bfield_eq'] = Bfield_eq
-            dict['sparse_Bfield_inj'] = Bfield_inj
-            dict['sparse_Bfield_anom'] = Bfield_anom
-            dict['sparse_b'] = np.asarray(dmd_b)
-            dict['sparse_omega'] = np.asarray(dmd_omega)
-            dict['sparse_Bt'] = dmd_Bt
+            psi_dict['sparse_Bfield'] = Bfield
+            psi_dict['sparse_Bfield_eq'] = Bfield_eq
+            psi_dict['sparse_Bfield_inj'] = Bfield_inj
+            psi_dict['sparse_Bfield_anom'] = Bfield_anom
+            psi_dict['sparse_b'] = np.asarray(dmd_b)
+            psi_dict['sparse_omega'] = np.asarray(dmd_omega)
+            psi_dict['sparse_Bt'] = dmd_Bt
         elif dmd_flag == 3:
-            dict['optimized_Bfield'] = Bfield
-            dict['optimized_Bfield_eq'] = Bfield_eq
-            dict['optimized_Bfield_inj'] = Bfield_inj
-            dict['optimized_Bfield_anom'] = Bfield_anom
-            dict['optimized_b'] = np.asarray(dmd_b)
-            dict['optimized_omega'] = np.asarray(dmd_omega)
-            dict['optimized_Bt'] = dmd_Bt
+            psi_dict['optimized_Bfield'] = Bfield
+            psi_dict['optimized_Bfield_eq'] = Bfield_eq
+            psi_dict['optimized_Bfield_inj'] = Bfield_inj
+            psi_dict['optimized_Bfield_anom'] = Bfield_anom
+            psi_dict['optimized_b'] = np.asarray(dmd_b)
+            psi_dict['optimized_omega'] = np.asarray(dmd_omega)
+            psi_dict['optimized_Bt'] = dmd_Bt
 
 ## Tests the DMD methods on forecasting by
 ## dividing into test/train data and using
 ## the full DMD reconstructions
-# @param total A list of psi-tet dictionaries
+# @param total A list of psi-tet psi_dictionaries
 # @param numwindows The number of windows to use
 # @param dmd_flags All the DMD method flags
 def DMD_forecast(total,numwindows,dmd_flags):
     fignum = len(total)*numwindows
     for k in range(len(total)):
-        dict = total[k]
-        f_1 = dict['f_1']
-        dictname = dict['filename']
-        t0 = dict['t0']
-        tf = dict['tf']
-        data = np.copy(dict['SVD_data'])
-        time = dict['sp_time'][t0:t0+int(tf/2)-1]
-        time_full = dict['sp_time'][t0:tf]
-        dt = dict['sp_time'][1] - dict['sp_time'][0]
+        psi_dict = total[k]
+        f_1 = psi_dict['f_1']
+        psi_dictname = psi_dict['filename']
+        t0 = psi_dict['t0']
+        tf = psi_dict['tf']
+        data = np.copy(psi_dict['SVD_data'])
+        time = psi_dict['sp_time'][t0:t0+int(tf/2)-1]
+        time_full = psi_dict['sp_time'][t0:tf]
+        dt = psi_dict['sp_time'][1] - psi_dict['sp_time'][0]
         r = np.shape(data)[0]
         tsize = len(time) #np.shape(data)[1]
         windowsize = int(np.floor(tsize/float(numwindows)))
@@ -196,7 +199,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
             ends = starts + np.ones(numwindows,dtype='int')*windowsize
         else:
             print('windowsize > tsize, dmd invalid')
-        trunc = dict['trunc']
+        trunc = psi_dict['trunc']
         for i in range(numwindows):
             for j in range(len(dmd_flags)):
                 Bfield = np.zeros((r,tsize),dtype='complex')
@@ -234,11 +237,11 @@ def DMD_forecast(total,numwindows,dmd_flags):
                         b = sparse_algorithm(trunc,q,P,b,gamma)
                         typename = 'sparse DMD'
                 elif dmd_flag == 3:
-                    initialize_variable_project(dict,data,trunc)
+                    #initialize_variable_project(psi_dict,data,trunc,True)
                     # Time algorithm 2 from Askham/Kutz 2017
                     tic = Clock.time()
                     B,omega = variable_project( \
-                        np.transpose(X),dict,trunc,starts[i],ends[i])
+                        np.transpose(X),psi_dict,trunc,starts[i],ends[i])
                     toc = Clock.time()
                     print('time in variable_projection = ',toc-tic,' s')
                     Bt = np.transpose(B)
@@ -299,51 +302,57 @@ def DMD_forecast(total,numwindows,dmd_flags):
                 err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
                     /np.linalg.norm(X,'fro')
                 print('Final error = ',err)
-                filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                filename = 'power_'+str(psi_dictname[:len(psi_dictname)-4])+'_'+str(i)
                 power_spectrum(b,omega,f_1,filename,typename)
-                filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                filename = 'phasePlot_'+str(psi_dictname[:len(psi_dictname)-4])+'_'+str(i)
                 freq_phase_plot(b,omega,f_1,filename,typename)
 
                 if dmd_flag == 1:
-                    dict['Bfield'] = Bfield
-                    dict['Bfield_eq'] = Bfield_eq
-                    dict['Bfield_inj'] = Bfield_inj
-                    dict['Bfield_anom'] = Bfield_anom
-                    dict['b'] = np.asarray(dmd_b)
-                    dict['omega'] = np.asarray(dmd_omega)
-                    dict['Bt'] = dmd_Bt
+                    psi_dict['Bfield'] = Bfield
+                    psi_dict['Bfield_eq'] = Bfield_eq
+                    psi_dict['Bfield_inj'] = Bfield_inj
+                    psi_dict['Bfield_anom'] = Bfield_anom
+                    psi_dict['b'] = np.asarray(dmd_b)
+                    psi_dict['omega'] = np.asarray(dmd_omega)
+                    psi_dict['Bt'] = dmd_Bt
                 elif dmd_flag == 2:
-                    dict['sparse_Bfield'] = Bfield
-                    dict['sparse_Bfield_eq'] = Bfield_eq
-                    dict['sparse_Bfield_inj'] = Bfield_inj
-                    dict['sparse_Bfield_anom'] = Bfield_anom
-                    dict['sparse_b'] = np.asarray(dmd_b)
-                    dict['sparse_omega'] = np.asarray(dmd_omega)
-                    dict['sparse_Bt'] = dmd_Bt
+                    psi_dict['sparse_Bfield'] = Bfield
+                    psi_dict['sparse_Bfield_eq'] = Bfield_eq
+                    psi_dict['sparse_Bfield_inj'] = Bfield_inj
+                    psi_dict['sparse_Bfield_anom'] = Bfield_anom
+                    psi_dict['sparse_b'] = np.asarray(dmd_b)
+                    psi_dict['sparse_omega'] = np.asarray(dmd_omega)
+                    psi_dict['sparse_Bt'] = dmd_Bt
                 elif dmd_flag == 3:
-                    dict['optimized_Bfield'] = Bfield
-                    dict['optimized_Bfield_eq'] = Bfield_eq
-                    dict['optimized_Bfield_inj'] = Bfield_inj
-                    dict['optimized_Bfield_anom'] = Bfield_anom
-                    dict['optimized_b'] = np.asarray(dmd_b)
-                    dict['optimized_omega'] = np.asarray(dmd_omega)
-                    dict['optimized_Bt'] = dmd_Bt
+                    psi_dict['optimized_Bfield'] = Bfield
+                    psi_dict['optimized_Bfield_eq'] = Bfield_eq
+                    psi_dict['optimized_Bfield_inj'] = Bfield_inj
+                    psi_dict['optimized_Bfield_anom'] = Bfield_anom
+                    psi_dict['optimized_b'] = np.asarray(dmd_b)
+                    psi_dict['optimized_omega'] = np.asarray(dmd_omega)
+                    psi_dict['optimized_Bt'] = dmd_Bt
         tfull_size = len(time_full)
         dmd_data = np.zeros((r,tfull_size),dtype='complex')
         sdmd_data = np.zeros((r,tfull_size),dtype='complex')
         odmd_data = np.zeros((r,tfull_size),dtype='complex')
-        dmd_data[:,0:tsize] = dict['Bfield']
-        sdmd_data[:,0:tsize] = dict['sparse_Bfield']
-        odmd_data[:,0:tsize] = dict['optimized_Bfield']
-        b = np.ravel(dict['b'])
-        omega = np.ravel(dict['omega'])
-        Bt = dict['Bt']
-        sparse_b = np.ravel(dict['sparse_b'])
-        sparse_omega = np.ravel(dict['sparse_omega'])
-        sparse_Bt = dict['sparse_Bt']
-        optimized_b = np.ravel(dict['optimized_b'])
-        optimized_omega = np.ravel(dict['optimized_omega'])
-        optimized_Bt = dict['optimized_Bt']
+        dmd_data[:,0:tsize] = psi_dict['Bfield']
+        sdmd_data[:,0:tsize] = psi_dict['sparse_Bfield']
+        odmd_data[:,0:tsize] = psi_dict['optimized_Bfield']
+        dmd_data[:,tsize-1] = dmd_data[:,tsize-2]
+        odmd_data[:,tsize-1] = odmd_data[:,tsize-2]
+        sdmd_data[:,tsize-1] = sdmd_data[:,tsize-2]
+        dmd_data[:,tsize] = dmd_data[:,tsize-2]
+        odmd_data[:,tsize] = odmd_data[:,tsize-2]
+        sdmd_data[:,tsize] = sdmd_data[:,tsize-2]
+        b = np.ravel(psi_dict['b'])
+        omega = np.ravel(psi_dict['omega'])
+        Bt = psi_dict['Bt']
+        sparse_b = np.ravel(psi_dict['sparse_b'])
+        sparse_omega = np.ravel(psi_dict['sparse_omega'])
+        sparse_Bt = psi_dict['sparse_Bt']
+        optimized_b = np.ravel(psi_dict['optimized_b'])
+        optimized_omega = np.ravel(psi_dict['optimized_omega'])
+        optimized_Bt = psi_dict['optimized_Bt']
         Vandermonde = \
             np.transpose(make_VandermondeT(omega,time_full-time_full[0]))
         sparse_Vandermonde = \
@@ -373,15 +382,15 @@ def DMD_forecast(total,numwindows,dmd_flags):
         #     -odmd_data[:,tsize+1:],'fro') \
         #     /np.linalg.norm(data[:,tsize+1:],'fro')
         # print('dmderr,sdmd_err,odmderr=',err1,' ',err2,' ',err3)
-        index = np.shape(dict['sp_Bpol'])[0]
-        if dict['is_HITSI3']:
+        index = np.shape(psi_dict['sp_Bpol'])[0]
+        if psi_dict['is_HITSI3']:
             offset = 3
         else:
             offset = 2
         plt.subplot(3,1,1)
         plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
-            linewidth=lw, \
+            psi_dict['full_data'][index+offset,:]*1e4,'k', \
+            linewidth=lw,label='True Signal', \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
         plt.plot(time_full*1000, \
@@ -389,10 +398,19 @@ def DMD_forecast(total,numwindows,dmd_flags):
             linewidth=lw, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
+        ax = plt.gca()
+        textstr = 'Training'
+        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
+        ax.text(0.45, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
+            verticalalignment='top', bbox=props)
+        textstr = 'Testing'
+        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
+        ax.text(0.75, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
+            verticalalignment='top', bbox=props)
 
         plt.subplot(3,1,3)
         plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
+            psi_dict['full_data'][index+offset,:]*1e4,'k', \
             linewidth=lw, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
@@ -404,7 +422,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
 
         plt.subplot(3,1,2)
         plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
+            psi_dict['full_data'][index+offset,:]*1e4,'k', \
             linewidth=lw, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
@@ -416,14 +434,14 @@ def DMD_forecast(total,numwindows,dmd_flags):
 
         for i in range(1,4):
             plt.subplot(3,1,i)
-            if i==1:
-                plt.title('Surface Probe: B_L01T000',fontsize=fs)
+            #if i==1:
+            #    plt.title('Surface Probe: B_L01T000',fontsize=fs)
             if i==3:
                 plt.xlabel('Time (ms)',fontsize=fs)
             plt.ylabel('B (G)',fontsize=fs)
             plt.axvline(x=time_full[tsize]*1000,color='k', \
                 linewidth=lw)
-            plt.legend(loc='upper left',fontsize=ls)
+            plt.legend(edgecolor='k',facecolor='wheat',loc='upper left',fontsize=ls)
             ax = plt.gca()
             ax.tick_params(axis='both', which='major', labelsize=ts)
             ax.tick_params(axis='both', which='minor', labelsize=ts)
@@ -432,6 +450,9 @@ def DMD_forecast(total,numwindows,dmd_flags):
             plt.ylim(-500,600)
             ax.set_yticks([-500,0,500])
         plt.savefig(out_dir+'forecasting.png')
+        plt.savefig(out_dir+'forecasting.eps')
+        plt.savefig(out_dir+'forecasting.pdf')
+        plt.savefig(out_dir+'forecasting.svg')
 
 ## Performs the sparse DMD algorithm (see Jovanovic 2014)
 # @param trunc Truncation number for the SVD
@@ -441,8 +462,8 @@ def DMD_forecast(total,numwindows,dmd_flags):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 200000
-    eps_prime = 1e-2/gamma
-    eps_dual = 1e-2/gamma
+    eps_prime = 1e-5/gamma
+    eps_dual = 1e-5/gamma
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -475,17 +496,19 @@ def sparse_algorithm(trunc,q,P,b,gamma):
 
 ## Initializes a "good" initial guess for the variable
 ## projection algorithm used in the optimized DMD
-# @param dict A dictionary with initialized SVD data
+# @param psi_dict A psi_dictionary with initialized SVD data
 # @param data The data matrix
 # @param trunc Truncation number for the SVD
-def initialize_variable_project(dict,data,trunc):
-    t0 = dict['t0']
-    tf = dict['tf']
-    U = dict['U']
+def initialize_variable_project(psi_dict,data,trunc):
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    U = psi_dict['U']
     X = data
     r = np.shape(X)[0]
-    time = dict['sp_time'][t0:tf]
-    #time = dict['sp_time'][t0:t0+int(tf/2)-1]
+    if dict['forecast']:
+        time = psi_dict['sp_time'][t0:t0+int(tf/2)-1]
+    else:
+        time = psi_dict['sp_time'][t0:tf]
     tsize = len(time)
 
     # use projected trapezoidal rule approximation
@@ -507,7 +530,7 @@ def initialize_variable_project(dict,data,trunc):
     s1 = np.diag(s1[0:trunc])
     atilde = np.dot(np.dot(np.dot( \
         np.transpose(np.conj(u1)),dx),v1),np.linalg.inv(s1))
-    dict['omega_init'],eigvecs = np.linalg.eig(atilde)
+    psi_dict['omega_init'],eigvecs = np.linalg.eig(atilde)
 
 ## Performs the Levenberg-Marquadt
 ## variable projection algorithm for the optimized DMD
@@ -517,12 +540,12 @@ def initialize_variable_project(dict,data,trunc):
 ## matlab implementation (https://github.com/duqbo/optdmd, Askham 2017)
 # @param Xt The transposed data matrix (so number of time samples
 #   is the number of rows, rather than columns)
-# @param dict A dictionary object which has initialized SVD data
+# @param psi_dict A psi_dictionary object which has initialized SVD data
 #   and initialized first guess for the omegas, defined as omega_init
 # @param trunc The truncation number of the SVD
 # @returns b The coefficients of the optimized DMD reconstruction
 # @returns omega The frequencies in the Vandermonde matrix
-def variable_project(Xt,dict,trunc,starts,ends):
+def variable_project(Xt,psi_dict,trunc,starts,ends):
     Xt = Xt.astype(np.complex128) #for numba
     ## Initial
     ##   value used for the regularization parameter
@@ -552,20 +575,20 @@ def variable_project(Xt,dict,trunc,starts,ends):
     ## The tolerance for detecting
     ##   a stall. If err(iter-1)-err(iter) < eps_stall*err(iter-1)
     ##   then a stall is detected and the program halts.
-    eps_stall = 1e-11
+    eps_stall = 1e-5
 
     m = np.shape(Xt)[0]
     r = np.shape(Xt)[1]
     n = r
-    t0 = dict['t0']
-    tf = dict['tf']
-    time = dict['sp_time'][t0:tf]
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    time = psi_dict['sp_time'][t0:tf]
     time = time[starts:ends]-time[0]
     tsize = len(time)
     dt = time[1]-time[0]
     # initialize values
-    #omega = np.ravel(dict['sparse_omega'])
-    omega = dict['omega_init']
+    omega = np.ravel(psi_dict['omega'])
+    #omega = psi_dict['omega_init']
     osort = np.argsort(np.real(omega))
     print(omega[osort]/(2*pi*1000.0))
     omegas = np.zeros((trunc,maxiter),dtype='complex')
@@ -585,7 +608,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     res = Xt - np.dot(VandermondeT,b)
     errlast = np.linalg.norm(res,'fro')/res_scale
     imode = 0
-    numThreads = dict['nprocs']
+    numThreads = psi_dict['nprocs']
     config.NUMBA_NUM_THREADS=numThreads
     print('NUMBA, using ',config.NUMBA_NUM_THREADS,' threads')
     Rprime = np.zeros((trunc*numThreads,trunc),complex)

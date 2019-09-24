@@ -41,85 +41,87 @@ def sihi_smooth(y, time, f_1):
 ## Performs a SVD of the data in a psi-tet dictionary.
 ## Has dmd_flags to control which data is put into the matrix
 ## for the SVD.
-# @param dict A psi-tet dictionary
-def SVD(dict):
-    t0 = dict['t0']
-    tf = dict['tf']
-    data = np.vstack((dict['curr01'],dict['curr02']))
-    if dict['is_HITSI3'] == True:
-        data = np.vstack((data,dict['curr03']))
-    #data = np.vstack((data,dict['flux01']))
-    #data = np.vstack((data,dict['flux02']))
-    data = np.vstack((data,dict['sp_Bpol']))
-    data = np.vstack((data,dict['sp_Btor']))
+# @param psi_dict A psi-tet dictionary
+def SVD(psi_dict):
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    data = np.vstack((psi_dict['curr01'],psi_dict['curr02']))
+    if psi_dict['is_HITSI3'] == True:
+        data = np.vstack((data,psi_dict['curr03']))
+    #data = np.vstack((data,psi_dict['flux01']))
+    #data = np.vstack((data,psi_dict['flux02']))
+    data = np.vstack((data,psi_dict['sp_Bpol']))
+    data = np.vstack((data,psi_dict['sp_Btor']))
     getshape = np.shape(data)[0]
-    if dict['use_IMP']:
-        if dict['num_IMPs'] == 8:
+    if psi_dict['use_IMP']:
+        if psi_dict['num_IMPs'] == 8:
             skip = 40
-            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
-            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
-            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
+            psi_dict['imp_Bpol'] = np.nan_to_num(psi_dict['imp_Bpol'])[::skip,:]
+            psi_dict['imp_Btor'] = np.nan_to_num(psi_dict['imp_Btor'])[::skip,:]
+            psi_dict['imp_Brad'] = np.nan_to_num(psi_dict['imp_Brad'])[::skip,:]
             bindices = slice(0,29,4)
             indices = list(range(0,32))
             del indices[bindices]
-            dict['imp_Bpol'] = dict['imp_Bpol'][indices,:]
-            dict['imp_Btor'] = dict['imp_Btor'][indices,:]
-            dict['imp_Brad'] = dict['imp_Brad'][indices,:]
-        if dict['num_IMPs'] == 32:
+            psi_dict['imp_Bpol'] = psi_dict['imp_Bpol'][indices,:]
+            psi_dict['imp_Btor'] = psi_dict['imp_Btor'][indices,:]
+            psi_dict['imp_Brad'] = psi_dict['imp_Brad'][indices,:]
+        if psi_dict['num_IMPs'] == 32:
             skip = 1
-            dict['imp_Bpol'] = np.nan_to_num(dict['imp_Bpol'])[::skip,:]
-            dict['imp_Btor'] = np.nan_to_num(dict['imp_Btor'])[::skip,:]
-            dict['imp_Brad'] = np.nan_to_num(dict['imp_Brad'])[::skip,:]
-        data = np.vstack((data,dict['imp_Bpol']))
-        shape1 = np.shape(dict['imp_Bpol'])[0]
-        shape2 = np.shape(dict['imp_Btor'])[0]
-        shape3 = np.shape(dict['imp_Brad'])[0]
+            psi_dict['imp_Bpol'] = np.nan_to_num(psi_dict['imp_Bpol'])[::skip,:]
+            psi_dict['imp_Btor'] = np.nan_to_num(psi_dict['imp_Btor'])[::skip,:]
+            psi_dict['imp_Brad'] = np.nan_to_num(psi_dict['imp_Brad'])[::skip,:]
+        data = np.vstack((data,psi_dict['imp_Bpol']))
+        shape1 = np.shape(psi_dict['imp_Bpol'])[0]
+        shape2 = np.shape(psi_dict['imp_Btor'])[0]
+        shape3 = np.shape(psi_dict['imp_Brad'])[0]
         imp_pol_indices = np.linspace(0,shape1,shape1, \
             dtype = 'int')
-        data = np.vstack((data,dict['imp_Btor']))
+        data = np.vstack((data,psi_dict['imp_Btor']))
         imp_tor_indices = np.linspace(shape1,shape2+shape1,shape2, \
             dtype = 'int')
-        data = np.vstack((data,dict['imp_Brad']))
+        data = np.vstack((data,psi_dict['imp_Brad']))
         imp_rad_indices = np.linspace(shape1+shape2, \
             shape3+shape2+shape1,shape3, \
             dtype = 'int')
 
     # correct injector currents
-    if dict['is_HITSI3'] == True:
+    if psi_dict['is_HITSI3'] == True:
         data[0:3,:] = data[0:3,:]*mu0
     else:
         data[0:2,:] = data[0:2,:]*mu0
     # For forecasting
-    #dict['full_data'] = data[:,t0:tf]
-    #data = data[:,t0:t0+int(tf/2)-1]
-    data = data[:,t0:tf]
+    if psi_dict['forecast']:
+        psi_dict['full_data'] = data[:,t0:tf]
+        data = data[:,t0:t0+int(tf/2)-1]
+    else:
+        data = data[:,t0:tf]
     noise = np.random.normal(0,5e-4,(np.shape(data)[0],np.shape(data)[1]))
-    data_sub = -data #+noise
-    #data_sub = subtract_linear_trend(dict,data)
+    data_sub = data #+noise
+    #data_sub = subtract_linear_trend(psi_dict,data)
     u,s,v = np.linalg.svd(data_sub)
     v = np.conj(np.transpose(v))
-    dict['SVD_data'] = data_sub
-    dict['SP_data'] = data
-    dict['U'] = u
-    dict['S'] = s
-    dict['V'] = v
+    psi_dict['SVD_data'] = data_sub
+    psi_dict['SP_data'] = data
+    psi_dict['U'] = u
+    psi_dict['S'] = s
+    psi_dict['V'] = v
 
 ## Identifies and subtracts a linear trend from each
 ## of the time signals contained in
-## the SVD data associated with the dictionary 'dict'. This is
+## the SVD data associated with the dictionary 'psi_dict'. This is
 ## to help DMD algorithms, since DMD does not deal well with
 ## non-exponential growth.
-# @param dict A dictionary with SVD data
+# @param psi_dict A dictionary with SVD data
 # @param data The SVD data matrix
 # @returns data_subtracted The SVD data matrix
 #  with the linear trend subtracted off
-def subtract_linear_trend(dict,data):
+def subtract_linear_trend(psi_dict,data):
     state_size = np.shape(data)[0]
     tsize = np.shape(data)[1]
-    t0 = dict['t0']
-    tf = dict['tf']
-    time = dict['sp_time'][t0:tf]
-    dt = dict['sp_time'][1] - dict['sp_time'][0]
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    time = psi_dict['sp_time'][t0:tf]
+    dt = psi_dict['sp_time'][1] - psi_dict['sp_time'][0]
     data_subtracted = np.zeros((state_size,tsize))
     for i in range(state_size):
         slope, intercept, r_value, p_value, std_err = linregress(time,data[i,:])
@@ -134,36 +136,36 @@ def subtract_linear_trend(dict,data):
 
 ## Computes the toroidal mode spectrum using the
 ## surface midplane gap probes
-# @param dict A psi-tet dictionary
+# @param psi_dict A psi-tet dictionary
 # @param dmd_flag Flag to indicate which dmd method is used
-def toroidal_modes_sp(dict,dmd_flag):
-    f_1 = dict['f_1']
-    t0 = dict['t0']
-    tf = dict['tf']
-    t_vec = dict['sp_time'][t0:tf-1]
-    size_bpol = np.shape(dict['sp_Bpol'])[0]
-    size_btor = np.shape(dict['sp_Btor'])[0]
+def toroidal_modes_sp(psi_dict,dmd_flag):
+    f_1 = psi_dict['f_1']
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    t_vec = psi_dict['sp_time'][t0:tf-1]
+    size_bpol = np.shape(psi_dict['sp_Bpol'])[0]
+    size_btor = np.shape(psi_dict['sp_Btor'])[0]
     offset = 2
-    if dict['is_HITSI3'] == True:
+    if psi_dict['is_HITSI3'] == True:
         offset = 3
     if dmd_flag == 1:
-        Bfield_anom = dict['Bfield_anom'] \
+        Bfield_anom = psi_dict['Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
         color = 'b'
     elif dmd_flag == 2:
-        Bfield_anom = dict['sparse_Bfield_anom'] \
+        Bfield_anom = psi_dict['sparse_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
         color = 'r'
     elif dmd_flag == 3:
-        Bfield_anom = dict['optimized_Bfield_anom'] \
+        Bfield_anom = psi_dict['optimized_Bfield_anom'] \
             [offset+size_bpol-32: \
             offset+size_bpol:2,:]
         color = 'g'
 
     tsize = len(t_vec)
-    print(t_vec[tsize-2])
+    print(t_vec[0])
     phi = midphi
     nmax = 7
     amps = fourier_calc(nmax,tsize,Bfield_anom,phi)
@@ -173,7 +175,7 @@ def toroidal_modes_sp(dict,dmd_flag):
             amps[m,:],label='n = '+str(m), \
             linewidth=lw)
             #plt.yscale('log')
-    plt.legend(fontsize=ls,loc='upper right',ncol=2)
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right',ncol=2)
     plt.axvline(x=23.34,color='k')
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.ylabel(r'$\delta B$', fontsize=fs)
@@ -183,11 +185,14 @@ def toroidal_modes_sp(dict,dmd_flag):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_amps_sp.png')
-    dict['toroidal_amps'] = amps
+    plt.savefig(out_dir+'toroidal_amps_sp.eps')
+    plt.savefig(out_dir+'toroidal_amps_sp.pdf')
+    plt.savefig(out_dir+'toroidal_amps_sp.svg')
+    psi_dict['toroidal_amps'] = amps
     plt.figure(60000,figsize=(figx, figy))
     plt.title('Surface Probes', fontsize=fs)
     for m in range(nmax+1):
-        plt.bar(m,amps[m,tsize-2]*1e4,edgecolor='k')
+        plt.bar(m,amps[m,0]*1e4,edgecolor='k')
     plt.xlabel(r'$n_\phi$',fontsize=fs)
     plt.ylabel('B (G)',fontsize=fs)
     ax = plt.gca()
@@ -195,43 +200,46 @@ def toroidal_modes_sp(dict,dmd_flag):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_sp_histogram'+str(dmd_flag)+'.png')
+    plt.savefig(out_dir+'toroidal_avgamps_sp_histogram'+str(dmd_flag)+'.eps')
+    plt.savefig(out_dir+'toroidal_avgamps_sp_histogram'+str(dmd_flag)+'.pdf')
+    plt.savefig(out_dir+'toroidal_avgamps_sp_histogram'+str(dmd_flag)+'.svg')
 
 ## Computes the toroidal mode spectrum using
 ## a set of 8 or 32 IMPs
-# @param dict A psi-tet dictionary
+# @param psi_dict A psi-tet dictionary
 # @param dmd_flag Flag to indicate which dmd method is used
-def toroidal_modes_imp(dict,dmd_flag):
-    f_1 = dict['f_1']
-    t0 = dict['t0']
-    tf = dict['tf']
-    t_vec = dict['sp_time'][t0:tf-1]
-    size_bpol = np.shape(dict['sp_Bpol'])[0]
-    size_btor = np.shape(dict['sp_Btor'])[0]
-    size_imp_bpol = np.shape(dict['imp_Bpol'])[0]
-    size_imp_btor = np.shape(dict['imp_Btor'])[0]
-    size_imp_brad = np.shape(dict['imp_Brad'])[0]
+def toroidal_modes_imp(psi_dict,dmd_flag):
+    f_1 = psi_dict['f_1']
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    t_vec = psi_dict['sp_time'][t0:tf-1]
+    size_bpol = np.shape(psi_dict['sp_Bpol'])[0]
+    size_btor = np.shape(psi_dict['sp_Btor'])[0]
+    size_imp_bpol = np.shape(psi_dict['imp_Bpol'])[0]
+    size_imp_btor = np.shape(psi_dict['imp_Btor'])[0]
+    size_imp_brad = np.shape(psi_dict['imp_Brad'])[0]
     offset = 2
-    if dict['is_HITSI3'] == True:
+    if psi_dict['is_HITSI3'] == True:
         offset = 3
     if dmd_flag == 1:
-        Bfield_anom = dict['Bfield_anom'] \
+        Bfield_anom = psi_dict['Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
         color = 'b'
     elif dmd_flag == 2:
-        Bfield_anom = dict['sparse_Bfield_anom'] \
+        Bfield_anom = psi_dict['sparse_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
         color = 'r'
     elif dmd_flag == 3:
-        Bfield_anom = dict['optimized_Bfield_anom'] \
+        Bfield_anom = psi_dict['optimized_Bfield_anom'] \
             [offset+size_bpol+size_btor: \
             offset+size_bpol+size_btor+size_imp_bpol,:]
         color = 'g'
 
     print('sihi smooth freq = ',f_1)
     tsize = len(t_vec)
-    num_IMPs = dict['num_IMPs']
+    num_IMPs = psi_dict['num_IMPs']
     phis = np.zeros(160*num_IMPs)
     if num_IMPs == 8:
         imp_phis = imp_phis8
@@ -276,6 +284,9 @@ def toroidal_modes_imp(dict,dmd_flag):
             plt.grid(True)
             plt.ylabel('B (G)',fontsize=fs)
             plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.png')
+            plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.eps')
+            plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.pdf')
+            plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.svg')
     elif num_IMPs == 32:
         for k in range(160):
             amps[:,k,:] = fourier_calc(nmax,tsize,Bfield_anom[k::160,:],phis[k::160])
@@ -300,6 +311,9 @@ def toroidal_modes_imp(dict,dmd_flag):
                     ax.set_xticks([])
                 subcount = subcount+1
     plt.savefig(out_dir+'toroidal_amps_imp.png')
+    plt.savefig(out_dir+'toroidal_amps_imp.eps')
+    plt.savefig(out_dir+'toroidal_amps_imp.pdf')
+    plt.savefig(out_dir+'toroidal_amps_imp.svg')
 
     plt.figure(170000,figsize=(figx, figy))
     if num_IMPs == 8:
@@ -314,19 +328,22 @@ def toroidal_modes_imp(dict,dmd_flag):
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.title('Average of IMPs', fontsize=fs)
     h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
-    #plt.legend(fontsize=ls-10,loc='upper left')
+    #plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
     ax.set_xticks([26.8,27.1])
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_imp.png')
-    dict['toroidal_amps'] = avg_amps
+    plt.savefig(out_dir+'toroidal_avgamps_imp.eps')
+    plt.savefig(out_dir+'toroidal_avgamps_imp.pdf')
+    plt.savefig(out_dir+'toroidal_avgamps_imp.svg')
+    psi_dict['toroidal_amps'] = avg_amps
     plt.figure(180000,figsize=(figx, figy))
     plt.title('Average of IMP Probes', fontsize=fs)
     for m in range(11):
         if m < nmax+1:
-            plt.bar(m,avg_amps[m,tsize-2]*1e4,edgecolor='k')
+            plt.bar(m,avg_amps[m,0]*1e4,edgecolor='k')
         else:
             plt.bar(m,0.0,edgecolor='k')
     plt.xlabel(r'$n_\phi$',fontsize=fs)
@@ -339,31 +356,34 @@ def toroidal_modes_imp(dict,dmd_flag):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.png')
+    plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.eps')
+    plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.pdf')
+    plt.savefig(out_dir+'toroidal_avgamps_imp_histogram'+str(dmd_flag)+'.svg')
 
 ## Computes the poloidal mode spectrum for each
 ## of the four poloidal slices of the surface probes
-# @param dict A psi-tet dictionary
+# @param psi_dict A psi-tet dictionary
 # @param dmd_flag Flag to indicate which dmd method is used
-def poloidal_modes(dict,dmd_flag):
-    f_1 = dict['f_1']
-    t0 = dict['t0']
-    tf = dict['tf']
-    t_vec = dict['sp_time'][t0:tf]
-    size_bpol = np.shape(dict['sp_Bpol'])[0]
-    size_btor = np.shape(dict['sp_Btor'])[0]
+def poloidal_modes(psi_dict,dmd_flag):
+    f_1 = psi_dict['f_1']
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    t_vec = psi_dict['sp_time'][t0:tf]
+    size_bpol = np.shape(psi_dict['sp_Bpol'])[0]
+    size_btor = np.shape(psi_dict['sp_Btor'])[0]
     offset = 2
-    if dict['is_HITSI3'] == True:
+    if psi_dict['is_HITSI3'] == True:
         offset = 3
     if dmd_flag == 1:
-        Bfield_anom = dict['Bfield_anom'] \
+        Bfield_anom = psi_dict['Bfield_anom'] \
             [offset:offset+size_bpol,:]
         color = 'b'
     elif dmd_flag == 2:
-        Bfield_anom = dict['sparse_Bfield_anom'] \
+        Bfield_anom = psi_dict['sparse_Bfield_anom'] \
             [offset:offset+size_bpol,:]
         color = 'r'
     elif dmd_flag == 3:
-        Bfield_anom = dict['optimized_Bfield_anom'] \
+        Bfield_anom = psi_dict['optimized_Bfield_anom'] \
             [offset:offset+size_bpol,:]
         color = 'g'
     tsize = len(t_vec)
@@ -421,12 +441,15 @@ def poloidal_modes(dict,dmd_flag):
         ax.tick_params(axis='both', which='major', labelsize=ts-10)
         ax.tick_params(axis='both', which='minor', labelsize=ts-10)
         plt.savefig(out_dir+'poloidal_amps.png')
-        dict['poloidal_amps'] = amps
+        plt.savefig(out_dir+'poloidal_amps.eps')
+        plt.savefig(out_dir+'poloidal_amps.pdf')
+        plt.savefig(out_dir+'poloidal_amps.svg')
+        psi_dict['poloidal_amps'] = amps
         plt.figure(70000,figsize=(figx, figy))
         plt.subplot(2,2,i+1)
         plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs-10)
         for m in range(nmax+1):
-            plt.bar(m,amps[m,tsize-2]*1e4,edgecolor='k')
+            plt.bar(m,amps[m,0]*1e4,edgecolor='k')
         if i == 0 or i == 2:
             #plt.ylabel('B (G)', fontsize=fs)
             plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs-10)
@@ -440,6 +463,9 @@ def poloidal_modes(dict,dmd_flag):
         ax.tick_params(axis='both', which='major', labelsize=ts-12)
         ax.tick_params(axis='both', which='minor', labelsize=ts-12)
         plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.png')
+        plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.eps')
+        plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.pdf')
+        plt.savefig(out_dir+'poloidal_avgamps_sp_histogram'+str(dmd_flag)+'.svg')
 
 ## Performs the fourier calculation based on Wrobel 2011
 # @param nmax The toroidal/poloidal number resolution
@@ -501,15 +527,22 @@ def fourier_calc(nmax,tsize,b,phi):
     return amps
 
 ## Plots the toroidal current for a shot
-# @param dict A psi-tet dictionary
-def plot_itor(dict):
-    itor = dict['tcurr']/1000.0
-    t0 = dict['t0']
-    tf = dict['tf']
-    time = dict['time']*1000.0
+# @param psi_dict A psi-tet dictionary
+def plot_itor(psi_dict):
+    itor = psi_dict['tcurr']/1000.0
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    time = psi_dict['time']*1000.0
     plt.figure(75000,figsize=(figx, figy))
-    plt.plot(time,itor,'k',linewidth=lw)
-    plt.legend(fontsize=ls,loc='upper right',ncol=2)
+    plt.plot(time,itor,color='orange',linewidth=lw,label=r'$I_{tor}$', \
+        path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        pe.Normal()])
+    plt.plot(time,np.sqrt((psi_dict['curr01']/1000.0)**2+(psi_dict['curr02']/1000.0)**2), \
+        'm',linewidth=lw,label=r'$\sqrt{(I^{inj}_x)^2+(I^{inj}_y)^2}$', \
+        path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'),pe.Normal()])
+ 
+    #plt.plot(time,dict['curr02']/1000.0,'k',alpha=0.5,linewidth=lw,label=r'$I_y$')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
     plt.axvline(x=time[t0],color='k')
     plt.axvline(x=time[tf],color='k')
     plt.xlabel('Time (ms)', fontsize=fs)
@@ -519,22 +552,25 @@ def plot_itor(dict):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'toroidal_current.png')
+    plt.savefig(out_dir+'toroidal_current.eps')
+    plt.savefig(out_dir+'toroidal_current.pdf')
+    plt.savefig(out_dir+'toroidal_current.svg')
 
 ## Plots the BD chronos for a shot
-# @param dict A psi-tet dictionary
-def plot_chronos(dict):
-    Vh = np.transpose(np.conj(dict['V']))
-    S = dict['S']
-    t0 = dict['t0']
-    tf = dict['tf']
-    time = dict['sp_time'][t0:tf]*1000.0
+# @param psi_dict A psi-tet dictionary
+def plot_chronos(psi_dict):
+    Vh = np.transpose(np.conj(psi_dict['V']))
+    S = psi_dict['S']
+    t0 = psi_dict['t0']
+    tf = psi_dict['tf']
+    time = psi_dict['sp_time'][t0:tf]*1000.0
     alphas = np.flip(np.linspace(0.3,1.0,3))
     plt.figure(85000,figsize=(figx, figy))
     for i in range(3):
         plt.plot(time,S[i]*Vh[i,:]*1e4/S[0],'m',linewidth=lw, alpha=alphas[i], \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()],label='Mode '+str(i+1))
-    plt.legend(fontsize=ls,loc='lower left')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='lower left')
     #plt.axvline(x=time[t0],color='k')
     #plt.axvline(x=time[tf],color='k')
     plt.xlabel('Time (ms)', fontsize=fs)
@@ -545,6 +581,9 @@ def plot_chronos(dict):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'BD_chronos.png')
+    plt.savefig(out_dir+'BD_chronos.eps')
+    plt.savefig(out_dir+'BD_chronos.pdf')
+    plt.savefig(out_dir+'BD_chronos.svg')
     plt.figure(95000,figsize=(figx, figy))
     plt.semilogy(range(1,len(S)+1),S/S[0],'mo',markersize=ms,markeredgecolor='k')
     plt.semilogy(range(1,len(S)+1),S/S[0],'m')
@@ -558,3 +597,6 @@ def plot_chronos(dict):
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
     plt.savefig(out_dir+'BD.png')
+    plt.savefig(out_dir+'BD.eps')
+    plt.savefig(out_dir+'BD.pdf')
+    plt.savefig(out_dir+'BD.svg')

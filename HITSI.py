@@ -109,12 +109,13 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         temp_dict['nprocs'] = nprocs
         temp_dict['trunc'] = trunc
         temp_dict['f_1'] = f_1
+        temp_dict['forecast']=forecast
         total.append(temp_dict)
 
     total = np.asarray(total).flatten()
     for i in range(len(filenames)):
         SVD(total[i])
-        #plot_itor(total[i])
+        plot_itor(total[i])
         #plot_chronos(total[i])
     if forecast:
         DMD_forecast(total,numwindows,dmd)
