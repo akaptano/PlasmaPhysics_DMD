@@ -15,9 +15,9 @@ import numpy as np
 ## Default output directory for all images and movies
 out_dir = 'Pictures/'
 ## Toroidal angle labels for the (R,phi) contour plots
-clabels = ['0',r'$\frac{\pi}{2}$', \
+clabels = ['0',r'$\frac{1}{2}\pi$', \
     r'$\pi$', \
-    r'$\frac{3\pi}{2}$', r'$2\pi$']
+    r'$\frac{3}{2}\pi$', r'$2\pi$']
 ## Permeability of free space
 mu0 = 4*pi*10**(-7)
 ## Fontsize for axis labels and titles

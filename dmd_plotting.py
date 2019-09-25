@@ -125,7 +125,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
             label=typename,alpha=alpha, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    plt.legend(loc='lower left',fontsize=ls-10,ncol=5)
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     plt.xlabel('f (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
@@ -199,7 +199,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.legend([h0.get_label()],fontsize=ts,loc='lower right')
+    plt.legend([h0.get_label()],edgecolor='k',facecolor='wheat',fontsize=ts,loc='lower right')
     plt.ylim(-1e3,1e0)
     plt.yscale('symlog',linthreshy=1e-2)
     ax = plt.gca()
@@ -282,20 +282,26 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     f_1 = dict['f_1']
     if dmd_flag == 1:
         Bfield = dict['Bfield']
-        Bfield_inj = dict['Bfield_inj']
-        Bfield_eq = dict['Bfield_eq']
+        Bfield_f1 = dict['Bfield_f1']
+        Bfield_f2 = dict['Bfield_f2']
+        Bfield_f3 = dict['Bfield_f3']
+        Bfield_f0 = dict['Bfield_f0']
         b = np.asarray(dict['Bfield'])[i,:]
         omega = np.asarray(dict['omega'])[i,:]
     if dmd_flag == 2:
         Bfield = dict['sparse_Bfield']
-        Bfield_inj = dict['sparse_Bfield_inj']
-        Bfield_eq = dict['sparse_Bfield_eq']
+        Bfield_f1 = dict['Bfield_f1']
+        Bfield_f2 = dict['Bfield_f2']
+        Bfield_f3 = dict['Bfield_f3']
+        Bfield_f0 = dict['sparse_Bfield_f0']
         b = np.asarray(dict['sparse_Bfield'])[i,:]
         omega = np.asarray(dict['sparse_omega'])[i,:]
     if dmd_flag == 3:
         Bfield = dict['optimized_Bfield']
-        Bfield_inj = dict['optimized_Bfield_inj']
-        Bfield_eq = dict['optimized_Bfield_eq']
+        Bfield_f1 = dict['Bfield_f1']
+        Bfield_f2 = dict['Bfield_f2']
+        Bfield_f3 = dict['Bfield_f3']
+        Bfield_f0 = dict['optimized_Bfield_f0']
         b = np.asarray(dict['optimized_Bfield'])[i,:]
         omega = np.asarray(dict['optimized_omega'])[i,:]
     t0 = dict['t0']
@@ -334,7 +340,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     #ax1.set_yticks([-500,0,500,1000])
     ax1.set_xticks([0,1,2])
     ax1.set_xticklabels([0,1,2])
-    plt.legend(fontsize=ls-10,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
     delta_k = np.real(omega)/1000.0/(2*pi)
     f_k = np.imag(omega)/1000.0/(2*pi)
 
@@ -350,7 +356,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
          pe.Normal()])
 
     plt.yscale('log')
-    plt.legend(fontsize=ls-8,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='lower right')
     #plt.xlim(-100,100)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -372,7 +378,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     plt.subplot(2,2,3)
     plt.grid(True)
     ax3 = plt.gca()
-    num_signals = np.shape(Bfield_inj[:,starts[i]:ends[i]])[0]
+    num_signals = np.shape(Bfield_f1[:,starts[i]:ends[i]])[0]
     nseg = int((tf-t0)/numwindows)
     spectros=np.zeros((66,numwindows))
     #spectros=np.zeros((113,numwindows))
@@ -385,7 +391,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
             scaling='spectrum', \
             noverlap=0)
         spectros += spec
-        print('j=: ',j,', shape=, ',np.shape(Bfield_inj[j,:numwindows*nseg]))
+        print('j=: ',j,', shape=, ',np.shape(Bfield_f1[j,:numwindows*nseg]))
     print((time[0]+stime)*1000,time[0],stime,sample_freq,nseg,tf,t0,numwindows)
     ptime = np.hstack(([0.0],(stime+stime[0])*1000.0))
     pcm = plt.pcolormesh(ptime, freq/1e3, spectros, \
@@ -435,11 +441,11 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     sample_freq = 1/dict['dt']
     for j in range(num_signals):
         freq, stime, spec = spectrogram( \
-            np.real(Bfield_inj[j,:numwindows*nseg]), \
+            np.real(Bfield_f1[j,:numwindows*nseg]), \
             sample_freq, \
             nperseg=nseg, \
             scaling='spectrum')
-        print(j,np.shape(Bfield_inj[j,:numwindows*nseg]))
+        print(j,np.shape(Bfield_f1[j,:numwindows*nseg]))
         spectros += spec
     print((time[0]+stime)*1000,time[0],stime,sample_freq,nseg,tf,t0,numwindows)
     pcm = plt.pcolormesh(ptime, freq/1e3, spectros, \
@@ -517,7 +523,7 @@ def make_reconstructions(dict,dmd_flag):
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.legend(fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
     plt.ylabel('B (G)',fontsize=fs)
     #plt.ylim((-150,300))
     #ax.set_yticks([-150,0,150,300])
@@ -556,7 +562,7 @@ def make_reconstructions(dict,dmd_flag):
         ax = plt.gca()
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(fontsize=ls,loc='upper left')
+        plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
         plt.ylabel('B (G)',fontsize=fs)
         plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
 
@@ -569,7 +575,7 @@ def toroidal_plot(dict,dmd_flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 1
+    tstep = 500
     FPS = 4
     offset = 2
     if dict['is_HITSI3']:
@@ -591,42 +597,60 @@ def toroidal_plot(dict,dmd_flag):
           exit()
         rads_imp[i*160:(i+1)*160] = np.ones(160)*imp_rads
     if dmd_flag == 1:
-        bpol_eq_imp = dict['Bfield_eq'] \
+        bpol_f0_imp = dict['Bfield_f0'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_inj_imp = dict['Bfield_inj'] \
+        bpol_f1_imp = dict['Bfield_f1'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f2_imp = dict['Bfield_f2'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f3_imp = dict['Bfield_f3'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
         bpol_imp = dict['Bfield'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_anom_imp = dict['Bfield_anom'] \
+        bpol_kink_imp = dict['Bfield_kink'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
     elif dmd_flag == 2:
-        bpol_eq_imp = dict['sparse_Bfield_eq'] \
+        bpol_f0_imp = dict['sparse_Bfield_f0'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_inj_imp = dict['sparse_Bfield_inj'] \
+        bpol_f1_imp = dict['sparse_Bfield_f1'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f2_imp = dict['sparse_Bfield_f2'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f3_imp = dict['sparse_Bfield_f3'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
         bpol_imp = dict['sparse_Bfield'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_anom_imp = dict['sparse_Bfield_anom'] \
+        bpol_kink_imp = dict['sparse_Bfield_kink'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
     elif dmd_flag == 3:
-        bpol_eq_imp = dict['optimized_Bfield_eq'] \
+        bpol_f0_imp = dict['optimized_Bfield_f0'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_inj_imp = dict['optimized_Bfield_inj'] \
+        bpol_f1_imp = dict['optimized_Bfield_f1'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f2_imp = dict['optimized_Bfield_f2'] \
+            [offset+bpol_size+btor_size: \
+            offset+bpol_size+btor_size+bpol_imp_size,:]
+        bpol_f3_imp = dict['optimized_Bfield_f3'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
         bpol_imp = dict['optimized_Bfield'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
-        bpol_anom_imp = dict['optimized_Bfield_anom'] \
+        bpol_kink_imp = dict['optimized_Bfield_kink'] \
             [offset+bpol_size+btor_size: \
             offset+bpol_size+btor_size+bpol_imp_size,:]
 
@@ -639,7 +663,7 @@ def toroidal_plot(dict,dmd_flag):
         bindices = slice(0,29,4)
         indices = list(range(0,32))
         del indices[bindices]
-        rimp = rimp[indices] 
+        rimp = rimp[indices]
         pimp = pimp[indices]
     rorig = np.ravel([rimp, rimp, rimp])
     phiorig = np.ravel([pimp-2*pi, pimp, pimp+2*pi])
@@ -653,7 +677,7 @@ def toroidal_plot(dict,dmd_flag):
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
 
-    bpol_imp = bpol_imp - bpol_inj_imp - bpol_eq_imp
+    bpol_imp = bpol_imp - bpol_f1_imp - bpol_f0_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
     moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.mp4'
@@ -664,10 +688,10 @@ def toroidal_plot(dict,dmd_flag):
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
 
-    bpol_imp = bpol_anom_imp
+    bpol_imp = bpol_kink_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_anom_reconstruction.mp4'
+    moviename = out_dir+'toroidal_Rphi_kink_reconstruction.mp4'
     ani = animation.FuncAnimation( \
        fig, update_tor_Rphi, range(0,tsize,tstep), \
        fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -675,11 +699,11 @@ def toroidal_plot(dict,dmd_flag):
        interval=100, blit=False)
     ani.save(moviename,fps=FPS)
 
-    #bpol_imp = bpol_anom_imp
+    #bpol_imp = bpol_kink_imp
     #movie_bpol = np.vstack((bpol_imp,bpol_imp))
     #movie_bpol = np.vstack((movie_bpol,bpol_imp))
     #midplaneR, midplanePhi = np.meshgrid(imp_rads[60:120],midplanePhi)
-    #moviename = out_dir+'toroidal_Rphi_anom_zoomed_reconstruction.mp4'
+    #moviename = out_dir+'toroidal_Rphi_kink_zoomed_reconstruction.mp4'
     #ani = animation.FuncAnimation( \
     #   fig, update_tor_Rphi, range(0,tsize,tstep), \
     #   fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -687,10 +711,10 @@ def toroidal_plot(dict,dmd_flag):
     #   interval=100, blit=False)
     #ani.save(moviename,fps=FPS)
 
-    bpol_imp = bpol_eq_imp
+    bpol_imp = bpol_f0_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_Eq_reconstruction.mp4'
+    moviename = out_dir+'toroidal_Rphi_f0_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -698,10 +722,32 @@ def toroidal_plot(dict,dmd_flag):
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
 
-    bpol_imp = bpol_inj_imp
+    bpol_imp = bpol_f1_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
-    moviename = out_dir+'toroidal_Rphi_inj_reconstruction.mp4'
+    moviename = out_dir+'toroidal_Rphi_f1_reconstruction.mp4'
+    ani = animation.FuncAnimation( \
+        fig, update_tor_Rphi, range(0,tsize,tstep), \
+        fargs=(movie_bpol,midplaneR,midplanePhi, \
+        rorig,phiorig,time),repeat=False, \
+        interval=100, blit=False)
+    ani.save(moviename,fps=FPS)
+
+    bpol_imp = bpol_f2_imp
+    movie_bpol = np.vstack((bpol_imp,bpol_imp))
+    movie_bpol = np.vstack((movie_bpol,bpol_imp))
+    moviename = out_dir+'toroidal_Rphi_f2_reconstruction.mp4'
+    ani = animation.FuncAnimation( \
+        fig, update_tor_Rphi, range(0,tsize,tstep), \
+        fargs=(movie_bpol,midplaneR,midplanePhi, \
+        rorig,phiorig,time),repeat=False, \
+        interval=100, blit=False)
+    ani.save(moviename,fps=FPS)
+
+    bpol_imp = bpol_f3_imp
+    movie_bpol = np.vstack((bpol_imp,bpol_imp))
+    movie_bpol = np.vstack((movie_bpol,bpol_imp))
+    moviename = out_dir+'toroidal_Rphi_f3_reconstruction.mp4'
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -721,10 +767,10 @@ def toroidal_plot(dict,dmd_flag):
 def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     print(frame)
     plt.clf()
-    plt.xlabel('R (m)',fontsize=fs)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+5)
+    plt.xlabel('R (m)',fontsize=fs+10)
+    h = plt.ylabel(r'$\phi$',fontsize=fs+10)
     h.set_rotation(0)
-    plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
+    #plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
     ax = plt.gca()
     # plot the probe locations
     plt.plot(R, phi,'ko',markersize=5,label='Probes')
@@ -734,13 +780,13 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
         [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
         markersize=ms,markeredgecolor='k',label='Y Injector Mouths')
-    ax.set_yticks([0,pi/2,pi,3*pi/2,2*pi])
-    ax.set_yticklabels(clabels)
-    ax.tick_params(axis='x', which='major', labelsize=ts)
-    ax.tick_params(axis='x', which='minor', labelsize=ts)
-    ax.tick_params(axis='y', which='major', labelsize=ts+10)
-    ax.tick_params(axis='y', which='minor', labelsize=ts+10)
-    #ax.set_xticks([0.2,0.4,0.6,0.8,1.0,1.2])
+    #ax.set_yticks([])
+    ax.set_yticks([pi/2,pi,3*pi/2,2*pi])
+    ax.set_yticklabels(clabels[1:])
+    ax.tick_params(axis='x', which='major', labelsize=fs)
+    ax.tick_params(axis='x', which='minor', labelsize=fs)
+    ax.tick_params(axis='y', which='major', labelsize=fs)
+    ax.tick_params(axis='y', which='minor', labelsize=fs)
     Bpol_frame = Bpol[:,frame]
     grid_bpol = np.asarray( \
         griddata((R,phi),Bpol_frame,(midplaneR,midplanePhi),'cubic'))
@@ -750,62 +796,18 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     contour = plt.contourf(midplaneR,midplanePhi, \
         grid_bpol,v,cmap=colormap,label=r'$B_\theta$', \
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    cbar.ax.tick_params(labelsize=ts)
+    #cbar = plt.colorbar(ticks=v,extend='both')
+    #cbar.ax.tick_params(labelsize=ts)
+    #ax.set_xticks([])
     ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
     ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
     ax.fill_between([1.052,1.2849],0,2*pi,facecolor='k',alpha=0.8)
     ax.fill_between([0.0,0.368],0,2*pi,facecolor='k',alpha=0.8)
     #ax.set_xticks([0.37,0.7,1.05])
     #ax.set_xticklabels([0.37,0.7,1.05])
-    plt.legend(fontsize=ls-12,loc='lower right')
+    #plt.legend(edgecolor='k',facecolor='wheat',fontsize=50,loc='lower left',
+    #    framealpha=1.0)
     plt.ylim((0,2*pi))
     plt.xlim(0,1.2849)
     #plt.xlim(0.3678,1.052)
     #plt.xlim(imp_rads[60],imp_rads[119])
-
-def spec_3D(dict,numwindows,dmd_flag):
-    f_1 = dict['f_1']
-    if dmd_flag == 1:
-        Bfield = dict['Bfield']
-    if dmd_flag == 2:
-        Bfield = dict['sparse_Bfield']
-    if dmd_flag == 3:
-        Bfield = dict['optimized_Bfield']
- 
-    fig = plt.figure(30000,figsize=(figx, figy))
-    ax = fig.gca(projection='3d')
-    plt.grid(True)
-    num_signals = np.shape(Bfield)[0]
-    #nseg = int((tf-t0)/numwindows)
-    spectros=np.zeros((76,numwindows))
-    #spectros=np.zeros((113,numwindows))
-    sample_freq = 1.0/dict['dt']
-    for j in range(num_signals):
-        freq, stime, spec = spectrogram( \
-            np.real(Bfield[j,:]), \
-            sample_freq, \
-            scaling='spectrum')
-            #nperseg=nseg,
-            #noverlap=0)
-        spectros += spec
-    pcm = ax.plot_surface(stime,delta/1e3,freq/1e3,cmap=colormap)
-    #for starti in range(len(starts)):
-    #    plt.axvline(dict['sp_time'][t0+starts[starti]]*1000,color='k')
-    #plt.axvline(dict['sp_time'][t0+ends[i]]*1000,color='k')
-    #plt.axvline(dict['sp_time'][t0+starts]*1000,color='k')
-    try:
-        cb=ax.collections[-2].colorbar
-        cb.remove()
-    except:
-        print("nothing to remove")
-    #cb = plt.colorbar(pcm,ticks=[1e-8,1e-6,1e-4,1e-2])
-    #cb = plt.colorbar(pcm,ticks=[1e-8,1e-6,1e-4,1e-2,1e0])
-    #cb.ax.tick_params(labelsize=ts)
-    #plt.ylim(0,100)
-    plt.xlabel('Time (ms)',fontsize=fs)
-    plt.ylabel(r'$\delta$ (kHz)',fontsize=fs)
-    plt.zlabel(r'f (kHz)',fontsize=fs)
-    ax.tick_params(axis='both', which='major', labelsize=ts)
-    ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.savefig(out_dir+'spec_3d.png')

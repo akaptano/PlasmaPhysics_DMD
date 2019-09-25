@@ -34,9 +34,11 @@ def DMD_slide(total,numwindows,dmd_flag):
             print('windowsize > tsize, dmd invalid')
         trunc = dict['trunc']
         Bfield = np.zeros((r,tsize),dtype='complex')
-        Bfield_inj = np.zeros((r,tsize),dtype='complex')
-        Bfield_eq = np.zeros((r,tsize),dtype='complex')
-        Bfield_anom = np.zeros((r,tsize),dtype='complex')
+        Bfield_f1 = np.zeros((r,tsize),dtype='complex')
+        Bfield_f2 = np.zeros((r,tsize),dtype='complex')
+        Bfield_f3 = np.zeros((r,tsize),dtype='complex')
+        Bfield_f0 = np.zeros((r,tsize),dtype='complex')
+        Bfield_kink = np.zeros((r,tsize),dtype='complex')
         dmd_b = []
         dmd_omega = []
         gammas = [0.5]
@@ -97,41 +99,55 @@ def DMD_slide(total,numwindows,dmd_flag):
                 if equilIndex.size==0:
                     equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
                 equilIndex = np.ravel(equilIndex).tolist()
-                injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                f1Index = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.3))
-                anomIndex = np.setdiff1d(anomIndex1,injIndex)
-                #anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                #    abs(np.imag(omega)/(2*pi)),14500*3,atol=2000)).nonzero()))
-                #anomIndex = equilIndex
+                f2Index = np.ravel(np.asarray(np.asarray(np.isclose( \
+                    abs(np.imag(omega)/(2*pi)),f_1*2000.0,atol=1000)).nonzero()))
+                f3Index = np.ravel(np.asarray(np.asarray(np.isclose( \
+                    abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
+                #kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                #kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
+                kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+                #kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
                 print(b[sortd]*np.conj(b[sortd]))
-                print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
+                print(kinkIndex,f1Index,equilIndex,omega[kinkIndex]/(2*pi*1000.0))
                 bsort = b[sortd]
-                weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
-                    sum(abs(b[anomIndex]))
+                weighted_avg = sum(omega[kinkIndex]/(2*pi*1000.0)*abs(b[kinkIndex]))/ \
+                    sum(abs(b[kinkIndex]))
                 print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
                 for mode in range(trunc):
                     Bfield[:,starts[i]:ends[i]] += \
                         0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                     if mode in equilIndex:
-                        Bfield_eq[:,starts[i]:ends[i]] += \
+                        Bfield_f0[:,starts[i]:ends[i]] += \
                             0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                    if mode in injIndex:
-                        Bfield_inj[:,starts[i]:ends[i]] += \
+                    if mode in f1Index:
+                        Bfield_f1[:,starts[i]:ends[i]] += \
                             0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                    if mode in anomIndex:
+                    if mode in f2Index:
+                        Bfield_f2[:,starts[i]:ends[i]] += \
+                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                    if mode in f3Index:
+                        Bfield_f3[:,starts[i]:ends[i]] += \
+                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                    if mode in kinkIndex:
                         print(mode,omega[mode]/(2*pi*1000),b[mode])
-                        Bfield_anom[:,starts[i]:ends[i]] += \
+                        Bfield_kink[:,starts[i]:ends[i]] += \
                             0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
                 #exit()
-                Bfield_inj[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_inj[:,starts[i]:ends[i]])
-                Bfield_eq[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_eq[:,starts[i]:ends[i]])
-                Bfield_anom[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_anom[:,starts[i]:ends[i]])
+                Bfield_f1[:,starts[i]:ends[i]] += \
+                    np.conj(Bfield_f1[:,starts[i]:ends[i]])
+                Bfield_f2[:,starts[i]:ends[i]] += \
+                    np.conj(Bfield_f2[:,starts[i]:ends[i]])
+                Bfield_f3[:,starts[i]:ends[i]] += \
+                    np.conj(Bfield_f3[:,starts[i]:ends[i]])
+                Bfield_f0[:,starts[i]:ends[i]] += \
+                    np.conj(Bfield_f0[:,starts[i]:ends[i]])
+                Bfield_kink[:,starts[i]:ends[i]] += \
+                    np.conj(Bfield_kink[:,starts[i]:ends[i]])
                 Bfield[:,starts[i]:ends[i]] += \
                     np.conj(Bfield[:,starts[i]:ends[i]])
                 err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
@@ -144,294 +160,34 @@ def DMD_slide(total,numwindows,dmd_flag):
 
         if dmd_flag == 1:
             dict['Bfield'] = Bfield
-            dict['Bfield_eq'] = Bfield_eq
-            dict['Bfield_inj'] = Bfield_inj
-            dict['Bfield_anom'] = Bfield_anom
+            dict['Bfield_f0'] = Bfield_f0
+            dict['Bfield_f1'] = Bfield_f1
+            dict['Bfield_f2'] = Bfield_f2
+            dict['Bfield_f3'] = Bfield_f3
+            dict['Bfield_kink'] = Bfield_kink
             dict['b'] = np.asarray(dmd_b)
             dict['omega'] = np.asarray(dmd_omega)
             dict['Bt'] = dmd_Bt
         elif dmd_flag == 2:
             dict['sparse_Bfield'] = Bfield
-            dict['sparse_Bfield_eq'] = Bfield_eq
-            dict['sparse_Bfield_inj'] = Bfield_inj
-            dict['sparse_Bfield_anom'] = Bfield_anom
+            dict['sparse_Bfield_f0'] = Bfield_f0
+            dict['sparse_Bfield_f1'] = Bfield_f1
+            dict['sparse_Bfield_f2'] = Bfield_f2
+            dict['sparse_Bfield_f3'] = Bfield_f3
+            dict['sparse_Bfield_kink'] = Bfield_kink
             dict['sparse_b'] = np.asarray(dmd_b)
             dict['sparse_omega'] = np.asarray(dmd_omega)
             dict['sparse_Bt'] = dmd_Bt
         elif dmd_flag == 3:
             dict['optimized_Bfield'] = Bfield
-            dict['optimized_Bfield_eq'] = Bfield_eq
-            dict['optimized_Bfield_inj'] = Bfield_inj
-            dict['optimized_Bfield_anom'] = Bfield_anom
+            dict['optimized_Bfield_f0'] = Bfield_f0
+            dict['optimized_Bfield_f1'] = Bfield_f1
+            dict['optimized_Bfield_f2'] = Bfield_f2
+            dict['optimized_Bfield_f3'] = Bfield_f3
+            dict['optimized_Bfield_kink'] = Bfield_kink
             dict['optimized_b'] = np.asarray(dmd_b)
             dict['optimized_omega'] = np.asarray(dmd_omega)
             dict['optimized_Bt'] = dmd_Bt
-
-## Tests the DMD methods on forecasting by
-## dividing into test/train data and using
-## the full DMD reconstructions
-# @param total A list of psi-tet dictionaries
-# @param numwindows The number of windows to use
-# @param dmd_flags All the DMD method flags
-def DMD_forecast(total,numwindows,dmd_flags):
-    fignum = len(total)*numwindows
-    for k in range(len(total)):
-        dict = total[k]
-        f_1 = dict['f_1']
-        dictname = dict['filename']
-        t0 = dict['t0']
-        tf = dict['tf']
-        data = np.copy(dict['SVD_data'])
-        time = dict['sp_time'][t0:t0+int(tf/2)-1]
-        time_full = dict['sp_time'][t0:tf]
-        dt = dict['sp_time'][1] - dict['sp_time'][0]
-        r = np.shape(data)[0]
-        tsize = len(time) #np.shape(data)[1]
-        windowsize = int(np.floor(tsize/float(numwindows)))
-        if numwindows==1:
-            windowsize=windowsize-1
-        if tsize >= windowsize:
-            starts = np.linspace(0, \
-                int(np.floor(tsize/float(numwindows)))*(numwindows-1),numwindows, dtype='int')
-            ends = starts + np.ones(numwindows,dtype='int')*windowsize
-        else:
-            print('windowsize > tsize, dmd invalid')
-        trunc = dict['trunc']
-        for i in range(numwindows):
-            for j in range(len(dmd_flags)):
-                Bfield = np.zeros((r,tsize),dtype='complex')
-                Bfield_inj = np.zeros((r,tsize),dtype='complex')
-                Bfield_eq = np.zeros((r,tsize),dtype='complex')
-                Bfield_anom = np.zeros((r,tsize),dtype='complex')
-                dmd_b = []
-                dmd_omega = []
-                dmd_flag = dmd_flags[j]
-                tbase = time[starts[i]:ends[i]]
-                X = data[:,starts[i]:ends[i]]
-                if dmd_flag == 1 or dmd_flag == 2:
-                    Xprime = data[:,1+starts[i]:ends[i]+1]
-                    Udmd,Sdmd,Vdmd = np.linalg.svd(X,full_matrices=False)
-                    Vdmd = np.transpose(Vdmd)
-                    Udmd = Udmd[:,0:trunc]
-                    Sdmd = Sdmd[0:trunc]
-                    Vdmd = Vdmd[0:tsize,0:trunc]
-                    S = np.diag(Sdmd)
-                    A = np.dot(np.dot(np.transpose(Udmd),Xprime),Vdmd/Sdmd)
-                    eigvals,Y = np.linalg.eig(A)
-                    Bt = np.dot(np.dot(Xprime,Vdmd/Sdmd),Y)
-                    omega = np.log(eigvals)/dt
-                    VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
-                    Vandermonde = np.transpose(VandermondeT)
-                    q = np.conj(np.diag(np.dot(np.dot(np.dot( \
-                        Vandermonde,Vdmd),np.conj(S)),Y)))
-                    P = np.dot(np.conj(np.transpose(Y)),Y)* \
-                        np.conj(np.dot(Vandermonde, \
-                        np.conj(VandermondeT)))
-                    b = np.dot(np.linalg.inv(P),q)
-                    typename = 'DMD'
-                    if dmd_flag == 2:
-                        gamma = 10.0
-                        b = sparse_algorithm(trunc,q,P,b,gamma)
-                        typename = 'sparse DMD'
-                elif dmd_flag == 3:
-                    initialize_variable_project(dict,data,trunc)
-                    # Time algorithm 2 from Askham/Kutz 2017
-                    tic = Clock.time()
-                    B,omega = variable_project( \
-                        np.transpose(X),dict,trunc,starts[i],ends[i])
-                    toc = Clock.time()
-                    print('time in variable_projection = ',toc-tic,' s')
-                    Bt = np.transpose(B)
-                    b = np.conj(np.transpose(np.sqrt(np.sum(abs(Bt)**2,axis=0))))
-                    Bt = np.dot(Bt,np.diag(1.0/b))
-                    typename = 'optimized DMD'
-                    VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
-                    Vandermonde = np.transpose(VandermondeT)
-
-                omega[np.isnan(omega).nonzero()] = 0
-                dmd_b.append(b)
-                dmd_omega.append(omega)
-                dmd_Bt = Bt
-                #sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
-                sortd = np.argsort(np.real(omega)/(2*pi*1000.0))
-                print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
-                #anomIndex = np.atleast_1d(sortd[0:26])
-                equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero())
-                if equilIndex.size==0:
-                    equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
-                equilIndex = np.ravel(equilIndex).tolist()
-                injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.1))
-                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                #anomIndex = np.setdiff1d(anomIndex1,injIndex)
-                anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
-                sortd = np.flip(np.argsort(abs(b)))
-                print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
-                print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
-                bsort = b[sortd]
-                weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
-                    sum(abs(b[anomIndex]))
-                print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
-                for mode in range(trunc):
-                    Bfield[:,starts[i]:ends[i]] += \
-                        0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                    if mode in equilIndex:
-                        Bfield_eq[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                    if mode in injIndex:
-                        Bfield_inj[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                    if mode in anomIndex:
-                        Bfield_anom[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                Bfield_inj[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_inj[:,starts[i]:ends[i]])
-                Bfield_eq[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_eq[:,starts[i]:ends[i]])
-                Bfield_anom[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield_anom[:,starts[i]:ends[i]])
-                Bfield[:,starts[i]:ends[i]] += \
-                    np.conj(Bfield[:,starts[i]:ends[i]])
-                err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
-                    /np.linalg.norm(X,'fro')
-                print('Final error = ',err)
-                filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
-                power_spectrum(b,omega,f_1,filename,typename)
-                filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
-                freq_phase_plot(b,omega,f_1,filename,typename)
-
-                if dmd_flag == 1:
-                    dict['Bfield'] = Bfield
-                    dict['Bfield_eq'] = Bfield_eq
-                    dict['Bfield_inj'] = Bfield_inj
-                    dict['Bfield_anom'] = Bfield_anom
-                    dict['b'] = np.asarray(dmd_b)
-                    dict['omega'] = np.asarray(dmd_omega)
-                    dict['Bt'] = dmd_Bt
-                elif dmd_flag == 2:
-                    dict['sparse_Bfield'] = Bfield
-                    dict['sparse_Bfield_eq'] = Bfield_eq
-                    dict['sparse_Bfield_inj'] = Bfield_inj
-                    dict['sparse_Bfield_anom'] = Bfield_anom
-                    dict['sparse_b'] = np.asarray(dmd_b)
-                    dict['sparse_omega'] = np.asarray(dmd_omega)
-                    dict['sparse_Bt'] = dmd_Bt
-                elif dmd_flag == 3:
-                    dict['optimized_Bfield'] = Bfield
-                    dict['optimized_Bfield_eq'] = Bfield_eq
-                    dict['optimized_Bfield_inj'] = Bfield_inj
-                    dict['optimized_Bfield_anom'] = Bfield_anom
-                    dict['optimized_b'] = np.asarray(dmd_b)
-                    dict['optimized_omega'] = np.asarray(dmd_omega)
-                    dict['optimized_Bt'] = dmd_Bt
-        tfull_size = len(time_full)
-        dmd_data = np.zeros((r,tfull_size),dtype='complex')
-        sdmd_data = np.zeros((r,tfull_size),dtype='complex')
-        odmd_data = np.zeros((r,tfull_size),dtype='complex')
-        dmd_data[:,0:tsize] = dict['Bfield']
-        sdmd_data[:,0:tsize] = dict['sparse_Bfield']
-        odmd_data[:,0:tsize] = dict['optimized_Bfield']
-        b = np.ravel(dict['b'])
-        omega = np.ravel(dict['omega'])
-        Bt = dict['Bt']
-        sparse_b = np.ravel(dict['sparse_b'])
-        sparse_omega = np.ravel(dict['sparse_omega'])
-        sparse_Bt = dict['sparse_Bt']
-        optimized_b = np.ravel(dict['optimized_b'])
-        optimized_omega = np.ravel(dict['optimized_omega'])
-        optimized_Bt = dict['optimized_Bt']
-        Vandermonde = \
-            np.transpose(make_VandermondeT(omega,time_full-time_full[0]))
-        sparse_Vandermonde = \
-            np.transpose(make_VandermondeT(sparse_omega,time_full-time_full[0]))
-        optimized_Vandermonde = \
-            np.transpose(make_VandermondeT(optimized_omega,time_full-time_full[0]))
-        for mode in range(trunc):
-            dmd_data[:,tsize+1:] += \
-                0.5*b[mode]*np.outer(Bt[:,mode], \
-                Vandermonde[mode,tsize+1:])
-            sdmd_data[:,tsize+1:] += \
-                0.5*sparse_b[mode]*np.outer(sparse_Bt[:,mode], \
-                sparse_Vandermonde[mode,tsize+1:])
-            odmd_data[:,tsize+1:] += \
-                0.5*optimized_b[mode]*np.outer(optimized_Bt[:,mode], \
-                optimized_Vandermonde[mode,tsize+1:])
-        dmd_data[:,tsize+1:] += np.conj(dmd_data[:,tsize+1:])
-        sdmd_data[:,tsize+1:] += np.conj(sdmd_data[:,tsize+1:])
-        odmd_data[:,tsize+1:] += np.conj(odmd_data[:,tsize+1:])
-        # err1 = np.linalg.norm(data[:,tsize+1:] \
-        #     -dmd_data[:,tsize+1:],'fro') \
-        #     /np.linalg.norm(data[:,tsize+1:],'fro')
-        # err2 = np.linalg.norm(data[:,tsize+1:] \
-        #     -sdmd_data[:,tsize+1:],'fro') \
-        #     /np.linalg.norm(data[:,tsize+1:],'fro')
-        # err3 = np.linalg.norm(data[:,tsize+1:] \
-        #     -odmd_data[:,tsize+1:],'fro') \
-        #     /np.linalg.norm(data[:,tsize+1:],'fro')
-        # print('dmderr,sdmd_err,odmderr=',err1,' ',err2,' ',err3)
-        index = np.shape(dict['sp_Bpol'])[0]
-        if dict['is_HITSI3']:
-            offset = 3
-        else:
-            offset = 2
-        plt.subplot(3,1,1)
-        plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-        plt.plot(time_full*1000, \
-            dmd_data[index+offset,:]*1e4,'b',label='DMD', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-
-        plt.subplot(3,1,3)
-        plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-        plt.plot(time_full*1000, \
-            sdmd_data[index+offset,:]*1e4,'r',label='sparse DMD', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-
-        plt.subplot(3,1,2)
-        plt.plot(time_full*1000, \
-            dict['full_data'][index+offset,:]*1e4,'k', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-        plt.plot(time_full*1000, \
-            odmd_data[index+offset,:]*1e4,'g',label='optimized DMD', \
-            linewidth=lw, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
-
-        for i in range(1,4):
-            plt.subplot(3,1,i)
-            if i==1:
-                plt.title('Surface Probe: B_L01T000',fontsize=fs)
-            if i==3:
-                plt.xlabel('Time (ms)',fontsize=fs)
-            plt.ylabel('B (G)',fontsize=fs)
-            plt.axvline(x=time_full[tsize]*1000,color='k', \
-                linewidth=lw)
-            plt.legend(loc='upper left',fontsize=ls)
-            ax = plt.gca()
-            ax.tick_params(axis='both', which='major', labelsize=ts)
-            ax.tick_params(axis='both', which='minor', labelsize=ts)
-            #plt.ylim(-150,300)
-            #ax.set_yticks([-150,0,150,300])
-            plt.ylim(-500,600)
-            ax.set_yticks([-500,0,500])
-        plt.savefig(out_dir+'forecasting.png')
 
 ## Performs the sparse DMD algorithm (see Jovanovic 2014)
 # @param trunc Truncation number for the SVD
@@ -544,7 +300,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 50000
+    maxiter = 2000
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol
