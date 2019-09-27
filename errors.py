@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib.patheffects as pe
 
-plt.figure(figsize=(14,12))
+plt.figure(figsize=(14,10))
 plt.grid(True)
 x = [1,3,5,10,20,40,60,80,100,120,140,160]
 odmdy = [0.1952,0.1015,0.07,0.0424,0.03385, \
@@ -13,9 +13,9 @@ odmdy = [0.1952,0.1015,0.07,0.0424,0.03385, \
 #    0.161,0.1623,0.1637,0.1637,0.1639,0.1638]
 dmdy = [0.1956,0.11417,0.1036,0.070111,0.06403, \
     0.05681,0.05298,0.05108,0.04732,0.04604,0.04488,0.0448]
-plt.xlabel('truncation number r',fontsize=40)
-h = plt.ylabel(r'$\epsilon$',fontsize=70)
-h.set_rotation(0)
+#plt.xlabel('truncation number r',fontsize=40)
+#h = plt.ylabel(r'$\epsilon$',fontsize=70)
+#h.set_rotation(0)
 ax = plt.gca()
 ax.yaxis.set_label_coords(-0.1,0.5)
 ax.tick_params(axis='both', which='major', labelsize=30)
@@ -39,7 +39,7 @@ ax.annotate('sparse DMD converges\nto traditional DMD', xy=(1.4, 6e-2),fontsize=
 ax2 = ax.twiny()
 plt.grid(True)
 ax2.set_xlim(ax.get_xlim())
-ax2.set_xlabel(r'sparsity promotion $\gamma$',fontsize=40)
+#ax2.set_xlabel(r'sparsity promotion $\gamma$',fontsize=40)
 ax2.set_xticks([1e-1,1e0,1e1,1e2])
 plt.xscale('log')
 plt.ylim(1e-3,1)
@@ -62,7 +62,7 @@ for i in range(len(gamma)):
 l = l1+l2+l3+l7
 #l = l1+l4+l2+l5+l3+l6+l7
 labs = [lines.get_label() for lines in l]
-plt.legend(l,labs,edgecolor='k',facecolor='wheat',fontsize=26,loc='lower left')
+plt.legend(l,labs,edgecolor='k',facecolor='gainsboro',fontsize=26,loc='lower left')
 ax2.annotate('Bad guess', xy=(1e2, 1.5e-1),fontsize=26, xytext=(1e1, 4e-1), \
     arrowprops=dict(facecolor='black', shrink=0.05))
 #ax.set_xticklabels(x)

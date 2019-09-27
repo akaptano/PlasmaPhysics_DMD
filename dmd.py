@@ -400,11 +400,11 @@ def DMD_forecast(total,numwindows,dmd_flags):
             pe.Normal()])
         ax = plt.gca()
         textstr = 'Training'
-        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
+        props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
         ax.text(0.45, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
         textstr = 'Testing'
-        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
+        props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
         ax.text(0.75, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
 
@@ -436,12 +436,12 @@ def DMD_forecast(total,numwindows,dmd_flags):
             plt.subplot(3,1,i)
             #if i==1:
             #    plt.title('Surface Probe: B_L01T000',fontsize=fs)
-            if i==3:
-                plt.xlabel('Time (ms)',fontsize=fs)
-            plt.ylabel('B (G)',fontsize=fs)
+            #if i==3:
+            #    plt.xlabel('Time (ms)',fontsize=fs)
+            #plt.ylabel('B (G)',fontsize=fs)
             plt.axvline(x=time_full[tsize]*1000,color='k', \
                 linewidth=lw)
-            plt.legend(edgecolor='k',facecolor='wheat',loc='upper left',fontsize=ls)
+            plt.legend(edgecolor='k',facecolor='gainsboro',loc='upper left',fontsize=ls)
             ax = plt.gca()
             ax.tick_params(axis='both', which='major', labelsize=ts)
             ax.tick_params(axis='both', which='minor', labelsize=ts)
@@ -449,6 +449,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
             #ax.set_yticks([-150,0,150,300])
             plt.ylim(-500,600)
             ax.set_yticks([-500,0,500])
+            plt.grid(True)
         plt.savefig(out_dir+'forecasting.png')
         plt.savefig(out_dir+'forecasting.eps')
         plt.savefig(out_dir+'forecasting.pdf')

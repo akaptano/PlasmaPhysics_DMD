@@ -175,7 +175,7 @@ def toroidal_modes_sp(psi_dict,dmd_flag):
             amps[m,:],label='n = '+str(m), \
             linewidth=lw)
             #plt.yscale('log')
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right',ncol=2)
+    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right',ncol=2)
     plt.axvline(x=23.34,color='k')
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.ylabel(r'$\delta B$', fontsize=fs)
@@ -328,7 +328,7 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
     plt.xlabel('Time (ms)', fontsize=fs)
     plt.title('Average of IMPs', fontsize=fs)
     h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
-    #plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls-10,loc='upper left')
+    #plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-10,loc='upper left')
     plt.grid(True)
     ax = plt.gca()
     ax.set_xticks([26.8,27.1])
@@ -542,11 +542,11 @@ def plot_itor(psi_dict):
         path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'),pe.Normal()])
  
     #plt.plot(time,dict['curr02']/1000.0,'k',alpha=0.5,linewidth=lw,label=r'$I_y$')
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper left')
     plt.axvline(x=time[t0],color='k')
     plt.axvline(x=time[tf],color='k')
-    plt.xlabel('Time (ms)', fontsize=fs)
-    plt.ylabel(r'$I_{tor}$ (kA)', fontsize=fs)
+    #plt.xlabel('Time (ms)', fontsize=fs)
+    #plt.ylabel(r'$I_{tor}$ (kA)', fontsize=fs)
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
@@ -570,7 +570,7 @@ def plot_chronos(psi_dict):
         plt.plot(time,S[i]*Vh[i,:]*1e4/S[0],'m',linewidth=lw, alpha=alphas[i], \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()],label='Mode '+str(i+1))
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='lower left')
+    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='lower left')
     #plt.axvline(x=time[t0],color='k')
     #plt.axvline(x=time[tf],color='k')
     plt.xlabel('Time (ms)', fontsize=fs)
