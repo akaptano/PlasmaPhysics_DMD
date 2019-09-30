@@ -5,8 +5,9 @@ from plot_attributes import *
 from map_probes import \
     sp_name_dict, dead_probes, \
     imp_phis8, imp_phis32, midphi, \
-    imp_rads
+    imp_rads, Z_bighit, R_bighit, Phi
 from scipy.stats import linregress
+import csv
 
 ## Python equivalent of the sihi_smooth function found in older
 ## matlab scripts. This does a boxcar average.
@@ -189,8 +190,6 @@ def toroidal_modes_sp(psi_dict,dmd_flag):
         if i <= 3:
             plt.figure(50000,figsize=(figx, figy))
             plt.subplot(4,1,i+1)
-            if i+1==4:
-                plt.xlabel('Time (ms)', fontsize=fs)
         else:
             plt.figure(50000+i,figsize=(figx, figy))
         for m in range(nmax+1):
@@ -198,9 +197,9 @@ def toroidal_modes_sp(psi_dict,dmd_flag):
                 amps[m,:],label='n = '+str(m), \
                 linewidth=lw)
                 #plt.yscale('log')
-        plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right')
+        plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
         plt.axvline(x=23.34,color='k')
-        plt.ylabel(r'$\delta B$', fontsize=fs)
+       # plt.ylabel(r'$\delta B$', fontsize=fs)
         #plt.title('Surface Probes', fontsize=fs)
         plt.grid(True)
         ax = plt.gca()
@@ -217,36 +216,55 @@ def toroidal_modes_sp(psi_dict,dmd_flag):
             plt.savefig(out_dir+'toroidal_amps_sp_kink.pdf')
             plt.savefig(out_dir+'toroidal_amps_sp_kink.svg')
         psi_dict['toroidal_amps'] = amps
+        avg_amps = abs(amps)
         if i <= 3:
             plt.figure(60000,figsize=(figx, figy))
-            plt.subplot(4,1,i+1)
+            #plt.subplot(4,1,i+1)
             #for m in range(nmax+1):
-            plt.bar(range(nmax+1),amps[:,0]*1e4,color='r',edgecolor='k', \
-                label=labelhist)
-            #plt.bar(range(8,11),0.0,color='r',edgecolor='k')
             ax = plt.gca()
-            if i+1==4:
-                plt.xlabel(r'$n_\phi$',fontsize=fs)
-                ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-                ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ''])
-            else:
-                ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-                ax.set_xticklabels([])
-            ax.set_yticks([min(amps[:,0])*1e4,max(amps[:,0])*1e4])
-            ax.set_yticklabels([int(min(amps[:,0])*1e4),int(max(amps[:,0])*1e4)])
+            amax = max(abs(avg_amps[:,0]))
+            width = 0.15
+            plt.bar(np.arange(nmax+1)+width*i,abs(avg_amps[:,0])*1e4,width, \
+                facecolor=bar_colors[i],edgecolor='k',label=labelhist)
+            ax.set_xticks(np.arange(nmax+1)+3*width/2.0)
+            #plt.bar(range(8,11),0.0,color='r',edgecolor='k')
+            #if i+1==4:
+                #plt.xlabel(r'$n_\phi$',fontsize=fs)
+            #    ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+            #    ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ''])
+            #else:
+            #    ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+            #    ax.set_xticklabels([])
+            ax.set_yscale('log')
+            ax.set_ylim(1e-2,1e3)
+            ax.set_yticks([1e-1,1e0,1e1,1e2,1e3])
+            plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
+
+            #ax.set_yticklabels([int(min(amps[:,0])*1e4),int(max(amps[:,0])*1e4)])
         else:
-            plt.figure(60000+i,figsize=(figx, figy))
-            for m in range(nmax+1):
-                plt.bar(m,amps[m,tsize-2]*1e4,edgecolor='k')
+            plt.figure(180004,figsize=(figx, figy))
+            plt.subplot(1,3,2)
+            ax = plt.gca()
+            amax = max(abs(avg_amps[:,tsize-2]))
+            width = 0.35
+            plt.bar(np.arange(nmax+1),abs(avg_amps[:,tsize-2])*1e4,width, \
+                facecolor=bar_colors[i],edgecolor='k',label='surface probes')
+            ax.set_xticks(np.arange(nmax+1))
+            ax.set_yscale('log')
+            ax.set_ylim(1e0,1e2)
+            ax.set_yticks([])
+            #plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-4,loc='upper right')
+
+        plt.grid(True)
+        ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
         #plt.title('Surface Probes', fontsize=fs)
-        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
-        ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
-            verticalalignment='top', bbox=props)
-        #plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right')
-        h0 = plt.ylabel('B (G)',fontsize=ts)
-        h0.set_rotation(0)
+        #props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
+        #ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
+        #    verticalalignment='top', bbox=props)
+        #h0 =# plt.ylabel('B (G)',fontsize=ts)
+        ##h0.set_rotation(0)
         ax = plt.gca()
-        ax.yaxis.set_label_coords(-0.12,0.4)
+        #ax.yaxis.set_label_coords(-0.12,0.4)
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
         if i <= 3:
@@ -353,11 +371,11 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
                     ax.tick_params(axis='both', which='major', labelsize=ts)
                     ax.tick_params(axis='both', which='minor', labelsize=ts)
                     plt.title('R = {0:.2f} m'.format(imp_rads[40*(k+1)]),fontsize=fs)
-                    plt.xlabel('Time (ms)',fontsize=fs)
+                    #plt.xlabel('Time (ms)',fontsize=fs)
                     ax.set_xticks([26.8,27.1])
                     plt.ylim(-40,60)
                     plt.grid(True)
-                    plt.ylabel('B (G)',fontsize=fs)
+                   # plt.ylabel('B (G)',fontsize=fs)
                     plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.png')
                     plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.eps')
                     plt.savefig(out_dir+'toroidal_amps_imp'+str(k)+'.pdf')
@@ -382,7 +400,7 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
                         ax.tick_params(axis='both', which='minor', labelsize=ts-6)
                         ax.set_yticks([])
                         if subcount >= 13:
-                            plt.xlabel('Time (ms)',fontsize=ts)
+                            #plt.xlabel('Time (ms)',fontsize=ts)
                             ax.set_xticks([26.8,27.1])
                         else:
                             ax.set_xticks([])
@@ -397,21 +415,24 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
         else:
             plt.figure(170000+i,figsize=(figx, figy))
         if num_IMPs == 8:
-            avg_amps = np.mean(amps[:,0:4,:],axis=1)
+            avg_amps = np.mean(abs(amps[:,0:4,:]),axis=1)
         elif num_IMPs == 32:
-            avg_amps = np.mean(amps,axis=1)
+            avg_amps = np.mean(abs(amps),axis=1)
         #avg_amps = np.mean(abs(amps),axis=1)
         for m in range(nmax+1):
             plt.plot(t_vec*1000, \
                 avg_amps[m,:]*1e4,label=r'$n_\phi =$ '+str(m), \
                 linewidth=lw)
-        plt.xlabel('Time (ms)', fontsize=fs)
-        plt.title('Average of IMPs', fontsize=fs)
-        h = plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
+        #plt.xlabel('Time (ms)', fontsize=fs)
+        #plt.title('Average of IMPs', fontsize=fs)
+        #h =# plt.ylabel(r'$B_{kink}$ (G)', fontsize=fs)
         #plt.legend(fontsize=ls-10,loc='upper left')
         plt.grid(True)
+        plt.xlim(t_vec[0]*1000,t_vec[len(t_vec)-1]*1000)
         ax = plt.gca()
-        ax.set_xticks([26.8,27.1])
+        ax.set_xticks([t_vec[0]*1000,t_vec[len(t_vec)-1]*1000])
+        ax.set_xticklabels(['{0:0.1f}'.format(t_vec[0]*1000), \
+            '{0:0.1f}'.format(t_vec[len(t_vec)-1]*1000)])
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
         if i <= 3:
@@ -420,6 +441,8 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
             plt.savefig(out_dir+'toroidal_avgamps_imp.pdf')
             plt.savefig(out_dir+'toroidal_avgamps_imp.svg')
         else:
+            ax.set_yticks([0,10,20,30,40])
+            plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-4,loc='upper left')
             plt.savefig(out_dir+'toroidal_avgamps_imp_kink.png')
             plt.savefig(out_dir+'toroidal_avgamps_imp_kink.eps')
             plt.savefig(out_dir+'toroidal_avgamps_imp_kink.pdf')
@@ -427,40 +450,44 @@ def toroidal_modes_imp(psi_dict,dmd_flag):
         psi_dict['toroidal_amps'] = avg_amps
         if i <= 3:
             plt.figure(180000,figsize=(figx, figy))
-            plt.subplot(4,1,i+1)
+            #plt.subplot(4,1,i+1)
             #for m in range(11):
             #    if m < nmax+1:
-            plt.bar(range(nmax+1),avg_amps[:,0]*1e4,color='r',edgecolor='k')
-            #    else:
-            #        plt.bar(m,0.0,color='r',edgecolor='k')
             ax = plt.gca()
-            if i == 3:
-                plt.xlabel(r'$n_\phi$',fontsize=fs)
-                ax.set_xticks([0,1,2,3,4,5,6,7,8,9,10,11])
-                ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ''])
-            else:
-                ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
-                ax.set_xticklabels([])
-            ax.set_yticks([min(avg_amps[:,0])*1e4,max(avg_amps[:,0])*1e4])
-            ax.set_yticklabels([int(min(avg_amps[:,0])*1e4),int(max(avg_amps[:,0])*1e4)])
+            amax = max(abs(avg_amps[:,0]))
+            width = 0.15
+            plt.bar(np.arange(nmax+1)+width*i,abs(avg_amps[:,0])*1e4, \
+                width,facecolor=bar_colors[i],edgecolor='k',label=labelhist)
+            ax.set_yscale('log')
+            ax.set_ylim(1e-2,1e3)
+            ax.set_yticks([1e-1,1e0,1e1,1e2,1e3])
+            ax.set_xticks(np.arange(nmax+1)+3*width/2.0)
+            plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
+            #ax.set_yticks([0,1])
+            #ax.set_yticklabels([int(min(avg_amps[:,0])*1e4),int(max(avg_amps[:,0])*1e4)])
         else:
-            plt.figure(180000+i,figsize=(figx, figy))
-        #plt.title('Average of IMP Probes', fontsize=fs)
-            for m in range(11):
-                if m < nmax+1:
-                    plt.bar(m,avg_amps[m,tsize-2]*1e4,edgecolor='k')
-                else:
-                    plt.bar(m,0.0,edgecolor='k')
+            plt.figure(180004,figsize=(figx, figy))
+            plt.subplot(1,3,1)
             ax = plt.gca()
-            ax.set_xticks([0,1,2,3,4,5,6,7,8,9,10])
-
-        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
-        ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
-            verticalalignment='top', bbox=props)
-        h0 = plt.ylabel('B (G)',fontsize=ts)
-        h0.set_rotation(0)
+            amax = max(abs(avg_amps[:,tsize-2]))
+            width = 0.35
+            plt.bar(np.arange(nmax+1),abs(avg_amps[:,tsize-2])*1e4,width, \
+                facecolor=bar_colors[i],edgecolor='k',label=labelhist)
+            ax.set_yscale('log')
+            ax.set_ylim(1e0,1e2)
+            ax.set_yticks([1e0,1e1,1e2])
+            ax.set_xticks(np.arange(nmax+1))
+            plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
+        plt.grid(True)
+        #ax.set_xticklabels([0, 1, 2, 3,''])
+        ax.set_xticklabels([0,1,2,3,4,5,6,7,8,9,'',''])
+        #props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
+        #ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
+        #    verticalalignment='top', bbox=props)
+        #h0 =# plt.ylabel('B (G)',fontsize=ts)
+        #h0.set_rotation(0)
         ax = plt.gca()
-        ax.yaxis.set_label_coords(-0.12,0.4)
+        #ax.yaxis.set_label_coords(-0.12,0.4)
         #if num_IMPs == 8:
         #    ax.set_xticks([0, 1, 2, 3])
         #if num_IMPs == 32:
@@ -557,7 +584,7 @@ def poloidal_modes(psi_dict,dmd_flag):
             B = B[inds]
             theta = temp_theta[np.where(inds)]
             amps[:,j,:] = fourier_calc(nmax,tsize,B,theta)
-        avg_amps = np.mean(amps,axis=1)
+        avg_amps = np.mean(abs(amps),axis=1)
         # can normalize by Bwall here
         # b1 = np.sqrt(int.sp.B_L04T000**2 + int.sp.B_L04P000**2)
         # b2 = np.sqrt(int.sp.B_L04T045**2 + int.sp.B_L04P045**2)
@@ -570,11 +597,11 @@ def poloidal_modes(psi_dict,dmd_flag):
                 plt.plot(t_vec*1000, \
                 amps[m,0,:]*1e4,label=r'$m_\theta$ = '+str(m),
                 linewidth=lw)
-            plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs-10)
-            if i == 0 or i == 2:
-                plt.ylabel('B (G)', fontsize=fs-10)
-            if i >= 2:
-                plt.xlabel('Time (ms)',fontsize=fs-10)
+            #plt.title(r'$\phi$ = '+phi_str[i],fontsize=fs-10)
+            #if i == 0 or i == 2:
+               # plt.ylabel('B (G)', fontsize=fs-10)
+            #if i >= 2:
+                #plt.xlabel('Time (ms)',fontsize=fs-10)
             plt.grid(True)
             ax = plt.gca()
             ax.tick_params(axis='both', which='major', labelsize=ts-10)
@@ -587,28 +614,38 @@ def poloidal_modes(psi_dict,dmd_flag):
         if i <= 3:
             plt.figure(70000,figsize=(figx, figy))
             ax = plt.gca()
-            plt.subplot(4,1,i+1)
-            plt.bar(range(nmax+1),avg_amps[:,0]*1e4,color='r',edgecolor='k')
-            ax = plt.gca()
-            ax.set_xticks([0, 1, 2, 3, 4, 5, 6, 7, 9])
-            if i==3:
-                plt.xlabel(r'$m_\theta$',fontsize=fs)
-                ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, ''])
-            else:
-                ax.set_xticklabels([])
-            ax.set_yticks([min(avg_amps[:,0])*1e4,max(avg_amps[:,0])*1e4])
-            ax.set_yticklabels([int(min(avg_amps[:,0])*1e4),int(max(avg_amps[:,0])*1e4)])
+            amax = max(abs(avg_amps[:,0]))
+            width = 0.15
+            plt.bar(np.arange(nmax+1)+width*i,abs(avg_amps[:,0])*1e4,width, \
+                facecolor=bar_colors[i],edgecolor='k',label=labelhist)
+            ax.set_yscale('log')
+            ax.set_ylim(1e0,1e3)
+            ax.set_yticks([1e0,1e1,1e2,1e3])
+            ax.set_xticks(np.arange(nmax+1)+3*width/2.0)
+            #ax.set_yticklabels([int(min(avg_amps[:,0])*1e4),int(max(avg_amps[:,0])*1e4)])
+            plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
         else:
-            plt.figure(70000+i,figsize=(figx, figy))
-            plt.bar(range(nmax+1),avg_amps[:,tsize-2]*1e4,color='r',edgecolor='k')
-        props = dict(boxstyle='round', facecolor='wheat', edgecolor='k', alpha=0.5)
-        ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
-            verticalalignment='top', bbox=props)
-        #plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right')
-        h0 = plt.ylabel('B (G)',fontsize=ts)
-        h0.set_rotation(0)
+            plt.figure(180004,figsize=(figx, figy))
+            plt.subplot(1,3,3)
+            ax = plt.gca()
+            amax = max(abs(avg_amps[:,tsize-2]))
+            width = 0.35
+            plt.bar(np.arange(nmax+1),abs(avg_amps[:,tsize-2])*1e4,width, \
+                facecolor=bar_colors[i],edgecolor='k',label='surface probes')
+            ax.set_yscale('log')
+            ax.set_ylim(1e0,1e2)
+            ax.set_yticks([])
+            ax.set_xticks(range(nmax+1))
+            #plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-4,loc='upper right')
+        plt.grid(True)
+        ax.set_xticklabels([0, 1, 2, 3, 4, 5, 6, 7, ''])
+        #ax.text(0.92, 0.87, labelhist, transform=ax.transAxes, fontsize=40,
+        #    verticalalignment='top', bbox=props)
+
+        #h0 =# plt.ylabel('B (G)',fontsize=ts)
+        #h0.set_rotation(0)
         ax = plt.gca()
-        ax.yaxis.set_label_coords(-0.12,0.4)
+        #ax.yaxis.set_label_coords(-0.12,0.4)
         #ax.set_yticks([-50,0,100,200])
         #ax.set_xticks([0,1,2,3,4,5,6,7])
         #ax.set_xticklabels(['0','1','2','3','4','5','6','7'])
@@ -693,11 +730,11 @@ def plot_itor(psi_dict):
     time = psi_dict['time']*1000.0
     plt.figure(75000,figsize=(figx, figy))
     plt.plot(time,itor,color='orange',linewidth=lw)
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper right')
+    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper right')
     plt.axvline(x=time[t0],color='k')
     plt.axvline(x=time[tf],color='k')
-    plt.xlabel('Time (ms)', fontsize=fs)
-    plt.ylabel(r'$I_{tor}$ (kA)', fontsize=fs)
+    #plt.xlabel('Time (ms)', fontsize=fs)
+   # plt.ylabel(r'$I_{tor}$ (kA)', fontsize=fs)
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
@@ -721,12 +758,12 @@ def plot_chronos(psi_dict):
         plt.plot(time,S[i]*Vh[i,:]*1e4/S[0],'m',linewidth=lw, alpha=alphas[i], \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()],label='Mode '+str(i+1))
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='lower left')
+    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='lower left')
     #plt.axvline(x=time[t0],color='k')
     #plt.axvline(x=time[tf],color='k')
-    plt.xlabel('Time (ms)', fontsize=fs)
-    h = plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}V_{ki}^*$', fontsize=fs)
-    h.set_rotation(0)
+    #plt.xlabel('Time (ms)', fontsize=fs)
+    #h =# plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}V_{ki}^*$', fontsize=fs)
+    #h.set_rotation(0)
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
@@ -740,9 +777,9 @@ def plot_chronos(psi_dict):
     plt.semilogy(range(1,len(S)+1),S/S[0],'m')
     #plt.axvline(x=time[t0],color='k')
     #plt.axvline(x=time[tf],color='k')
-    plt.xlabel('Mode Number k', fontsize=fs)
-    h = plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}$', fontsize=fs)
-    h.set_rotation(0)
+    #plt.xlabel('Mode Number k', fontsize=fs)
+    #h =# plt.ylabel(r'$\frac{\Sigma_{kk}}{\Sigma_{00}}$', fontsize=fs)
+    #h.set_rotation(0)
     plt.grid(True)
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
@@ -751,3 +788,72 @@ def plot_chronos(psi_dict):
     plt.savefig(out_dir+'BD.eps')
     plt.savefig(out_dir+'BD.pdf')
     plt.savefig(out_dir+'BD.svg')
+
+def write_Bfield_csv(psi_dict):
+    size_bpol = np.shape(psi_dict['sp_Bpol'])[0]
+    size_btor = np.shape(psi_dict['sp_Btor'])[0]
+    size_imp_bpol = np.shape(psi_dict['imp_Bpol'])[0]
+    size_imp_btor = np.shape(psi_dict['imp_Btor'])[0]
+    size_imp_brad = np.shape(psi_dict['imp_Brad'])[0]
+    tstep = 500
+    offset = 2
+    Bdata = np.reshape(psi_dict['SVD_data'][:,tstep], \
+        (np.shape(psi_dict['SVD_data'])[0],1))
+    Bz = np.vstack((Bdata[offset:offset+size_bpol], \
+        Bdata[offset+size_bpol+size_btor: \
+        offset+size_bpol+size_btor+size_imp_bpol]))
+    Btor = np.vstack((Bdata[offset+size_bpol: \
+        offset+size_bpol+size_btor], \
+        Bdata[offset+size_bpol+size_btor+size_imp_bpol: \
+        offset+size_bpol+size_btor+size_imp_bpol+size_imp_btor]))
+    Brad = np.vstack((np.zeros((size_bpol,1)), \
+        Bdata[offset+size_bpol+size_btor+size_imp_bpol+size_imp_btor: \
+        offset+size_bpol+size_btor+size_imp_bpol+size_imp_btor+size_imp_brad]))
+    zprobes = np.zeros(np.shape(Bz)[0])
+    rprobes = np.zeros(np.shape(Bz)[0])
+    phiprobes = np.zeros(np.shape(Bz)[0])
+    num_IMPs = psi_dict['num_IMPs']
+    phis_imp = np.zeros(160*num_IMPs)
+    rads_imp = np.zeros(160*num_IMPs)
+    for i in range(num_IMPs):
+        if num_IMPs == 8:
+          phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis8[i]
+          skip = 40
+        elif num_IMPs == 32:
+          phis_imp[i*160:(i+1)*160] = np.ones(160)*imp_phis32[i]
+          skip = 1
+        else:
+          print('Invalid number of IMPs, exiting')
+          exit()
+        rads_imp[i*160:(i+1)*160] = np.ones(160)*imp_rads
+    q = 0
+    qq = 0
+    for i in range(96):
+        if i < 64:
+            zprobes[i] = Z_bighit[q]
+            rprobes[i] = R_bighit[q]
+            phiprobes[i] = Phi[i % 4]
+            if (i+1) % 4 == 0:
+                q = q + 1
+        else:
+            zprobes[i] = Z_bighit[16+(i%2)]
+            rprobes[i] = R_bighit[16+(i%2)]
+            phiprobes[i] = midphi[qq]
+            if (i+1) % 2 == 0:
+                qq = qq + 1
+    print(zprobes[:96],rprobes[:96],phiprobes[:96])
+    zprobes[96:] = 0.0
+    rprobes[96:] = rads_imp
+    phiprobes[96:] = phis_imp
+    zprobes = zprobes.flatten()
+    rprobes = rprobes.flatten()
+    phiprobes = phiprobes.flatten()
+    Bz = Bz.flatten()
+    Brad = Brad.flatten()
+    Btor = Btor.flatten()
+    xprobes = rprobes*np.cos(phiprobes)
+    yprobes = rprobes*np.sin(phiprobes)
+    Bx = Brad*np.cos(phiprobes) - Btor*np.sin(phiprobes)
+    By = Brad*np.sin(phiprobes) + Btor*np.cos(phiprobes)
+    saveArray = [xprobes,yprobes,zprobes,Bx,By,Bz]
+    np.savetxt('plotly_data.csv',np.transpose(saveArray),delimiter=',')

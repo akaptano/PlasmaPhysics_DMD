@@ -105,10 +105,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),f_1*2000.0,atol=1000)).nonzero()))
                 f3Index = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
-                #kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                #kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
-                kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+                kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
+                #kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
@@ -300,7 +300,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 2000
+    maxiter = 10000
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol

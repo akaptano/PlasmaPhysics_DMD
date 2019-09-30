@@ -15,9 +15,9 @@ import numpy as np
 ## Default output directory for all images and movies
 out_dir = 'Pictures/'
 ## Toroidal angle labels for the (R,phi) contour plots
-clabels = ['0',r'$\frac{1}{2}\pi$', \
+clabels = ['0',r'$\frac{\pi}{2}$', \
     r'$\pi$', \
-    r'$\frac{3}{2}\pi$', r'$2\pi$']
+    r'$\frac{3\pi}{2}$', r'$2\pi$']
 ## Permeability of free space
 mu0 = 4*pi*10**(-7)
 ## Fontsize for axis labels and titles
@@ -42,6 +42,8 @@ transparency = 1.0
 Colors = np.random.rand(100,3)
 ## colors specifically for plotting two-temperature MHD results
 colors2T = ['r','b','g','k','c']
+## colors for the bar plots in the DMD paper
+bar_colors = ['orange','m','c','darkslategrey','hotpink']
 ## Styles to distinguish between discharges with different
 ## injector frequencies
 Styles = ['dashed','dotted','-.','solid',':']

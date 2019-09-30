@@ -8,7 +8,7 @@ from psitet_load import loadshot
 from utilities import SVD, \
     toroidal_modes_sp, poloidal_modes, \
     toroidal_modes_imp, plot_itor, \
-    plot_chronos
+    plot_chronos, write_Bfield_csv
 from dmd import DMD_slide
 from dmd_plotting import \
     make_reconstructions, \
@@ -112,6 +112,8 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         SVD(total[i])
         #plot_itor(total[i])
         #plot_chronos(total[i])
+    #write_Bfield_csv(total[0])
+    #exit()
     for k in range(len(dmd)):
         if dmd[k] > 0 and dmd[k] < 4:
             DMD_slide(total,numwindows,dmd[k])

@@ -125,7 +125,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
             label=typename,alpha=alpha, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='lightgrey',fontsize=ls,loc='upper left')
     plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     plt.xlabel('f (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
@@ -199,7 +199,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.legend([h0.get_label()],edgecolor='k',facecolor='wheat',fontsize=ts,loc='lower right')
+    plt.legend([h0.get_label()],edgecolor='k',facecolor='lightgrey',fontsize=ts,loc='lower right')
     plt.ylim(-1e3,1e0)
     plt.yscale('symlog',linthreshy=1e-2)
     ax = plt.gca()
@@ -340,7 +340,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     #ax1.set_yticks([-500,0,500,1000])
     ax1.set_xticks([0,1,2])
     ax1.set_xticklabels([0,1,2])
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='lightgrey',fontsize=ls,loc='upper left')
     delta_k = np.real(omega)/1000.0/(2*pi)
     f_k = np.imag(omega)/1000.0/(2*pi)
 
@@ -356,7 +356,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
          pe.Normal()])
 
     plt.yscale('log')
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='lightgrey',fontsize=ls,loc='lower right')
     #plt.xlim(-100,100)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -523,7 +523,7 @@ def make_reconstructions(dict,dmd_flag):
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='lightgrey',fontsize=ls,loc='upper left')
     plt.ylabel('B (G)',fontsize=fs)
     #plt.ylim((-150,300))
     #ax.set_yticks([-150,0,150,300])
@@ -562,7 +562,7 @@ def make_reconstructions(dict,dmd_flag):
         ax = plt.gca()
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(edgecolor='k',facecolor='wheat',fontsize=ls,loc='upper left')
+        plt.legend(edgecolor='k',facecolor='lightgrey',fontsize=ls,loc='upper left')
         plt.ylabel('B (G)',fontsize=fs)
         plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
 
@@ -576,6 +576,8 @@ def toroidal_plot(dict,dmd_flag):
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
     tstep = 500
+    if dmd_flag == 3:
+        tstep = 1
     FPS = 4
     offset = 2
     if dict['is_HITSI3']:
@@ -676,6 +678,9 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour.eps')
+    plt.savefig(out_dir+'contour.pdf')
 
     bpol_imp = bpol_imp - bpol_f1_imp - bpol_f0_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -687,6 +692,9 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_subtracted.eps')
+    plt.savefig(out_dir+'contour_subtracted.pdf')
 
     bpol_imp = bpol_kink_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -698,6 +706,9 @@ def toroidal_plot(dict,dmd_flag):
        rorig,phiorig,time),repeat=False, \
        interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tsize-2,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_kink.eps')
+    plt.savefig(out_dir+'contour_kink.pdf')
 
     #bpol_imp = bpol_kink_imp
     #movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -721,6 +732,9 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f0.eps')
+    plt.savefig(out_dir+'contour_f0.pdf')
 
     bpol_imp = bpol_f1_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -732,6 +746,9 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f1.eps')
+    plt.savefig(out_dir+'contour_f1.pdf')
 
     bpol_imp = bpol_f2_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -743,6 +760,9 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f2.eps')
+    plt.savefig(out_dir+'contour_f2.pdf')
 
     bpol_imp = bpol_f3_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
@@ -754,6 +774,18 @@ def toroidal_plot(dict,dmd_flag):
         rorig,phiorig,time),repeat=False, \
         interval=100, blit=False)
     ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f3.eps')
+    plt.savefig(out_dir+'contour_f3.pdf')
+    update_tor_Rphi(tstep+5,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f3_1.eps')
+    plt.savefig(out_dir+'contour_f3_1.pdf')
+    update_tor_Rphi(tstep+10,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f3_2.eps')
+    plt.savefig(out_dir+'contour_f3_2.pdf')
+    update_tor_Rphi(tstep+15,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_f3_3.eps')
+    plt.savefig(out_dir+'contour_f3_3.pdf')
 
 ## Update function for FuncAnimation object
 ## for the (R,phi) contour plots
@@ -767,26 +799,26 @@ def toroidal_plot(dict,dmd_flag):
 def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     print(frame)
     plt.clf()
-    plt.xlabel('R (m)',fontsize=fs+10)
-    h = plt.ylabel(r'$\phi$',fontsize=fs+10)
-    h.set_rotation(0)
+    #plt.xlabel('R (m)',fontsize=fs+10)
+    #h = plt.ylabel(r'$\phi$',fontsize=fs+10)
+    #h.set_rotation(0)
     #plt.title('Time = '+'{0:.3f}'.format(time[frame])+' ms',fontsize=fs)
     ax = plt.gca()
     # plot the probe locations
-    plt.plot(R, phi,'ko',markersize=5,label='Probes')
-    plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
-        [pi/8.0,pi+pi/8.0],'ro',markersize=ms, \
-        markeredgecolor='k',label='X Injector Mouths')
-    plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
-        [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
-        markersize=ms,markeredgecolor='k',label='Y Injector Mouths')
+    #plt.plot(R, phi,'ko',markersize=5,label='Probes')
+    #plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
+    #    [pi/8.0,pi+pi/8.0],'co',markersize=ms+8, \
+    #    markeredgecolor='k',label='X Injector Mouths')
+    #plt.plot([(1.0+0.625)/2.0,(1.0+0.625)/2.0], \
+    #    [pi/2.0+pi/8.0,3*pi/2.0+pi/8.0],'yo', \
+    #    markersize=ms+8,markeredgecolor='k',label='Y Injector Mouths')
     #ax.set_yticks([])
-    ax.set_yticks([pi/2,pi,3*pi/2,2*pi])
-    ax.set_yticklabels(clabels[1:])
-    ax.tick_params(axis='x', which='major', labelsize=fs)
-    ax.tick_params(axis='x', which='minor', labelsize=fs)
-    ax.tick_params(axis='y', which='major', labelsize=fs)
-    ax.tick_params(axis='y', which='minor', labelsize=fs)
+    ax.set_yticks([0,pi/2,pi,3*pi/2,2*pi])
+    ax.set_yticklabels(['','',r'$\pi$','',r'$2\pi$'])
+    ax.tick_params(axis='x', which='major', labelsize=fs+30)
+    ax.tick_params(axis='x', which='minor', labelsize=fs+30)
+    ax.tick_params(axis='y', which='major', labelsize=fs+30)
+    ax.tick_params(axis='y', which='minor', labelsize=fs+30)
     Bpol_frame = Bpol[:,frame]
     grid_bpol = np.asarray( \
         griddata((R,phi),Bpol_frame,(midplaneR,midplanePhi),'cubic'))
@@ -798,14 +830,18 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
     #cbar = plt.colorbar(ticks=v,extend='both')
     #cbar.ax.tick_params(labelsize=ts)
+    #cbar.ax.set_yticks([-1, -0.1, -0.01, -0.001, \
+    #    0.001,0.01,0.1,1])
+    #cbar.ax.set_yticklabels(['-1', '-0.1', '-0.01', '-0.001', \
+    #    '0.001','0.01','0.1','1'])
     #ax.set_xticks([])
     ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
-    ax.set_xticklabels([0,0.25,0.5,0.75,1.0,1.25])
-    ax.fill_between([1.052,1.2849],0,2*pi,facecolor='k',alpha=0.8)
-    ax.fill_between([0.0,0.368],0,2*pi,facecolor='k',alpha=0.8)
+    ax.set_xticklabels(['0','','0.5','','1',''])
+    #ax.fill_between([1.052,1.2849],0,2*pi,facecolor='lightgrey')
+    #ax.fill_between([0.0,0.368],0,2*pi,facecolor='lightgrey')
     #ax.set_xticks([0.37,0.7,1.05])
     #ax.set_xticklabels([0.37,0.7,1.05])
-    #plt.legend(edgecolor='k',facecolor='wheat',fontsize=50,loc='lower left',
+    #plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=50,loc='lower left',
     #    framealpha=1.0)
     plt.ylim((0,2*pi))
     plt.xlim(0,1.2849)
