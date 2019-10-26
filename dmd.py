@@ -41,7 +41,7 @@ def DMD_slide(total,numwindows,dmd_flag):
         Bfield_kink = np.zeros((r,tsize),dtype='complex')
         dmd_b = []
         dmd_omega = []
-        gammas = [0.5]
+        gammas = [0.5] #[0.1,1.0,10.0,100.0]
         for i in range(numwindows):
             for j in range(len(gammas)):
                 tbase = time[starts[i]:ends[i]]
@@ -71,7 +71,15 @@ def DMD_slide(total,numwindows,dmd_flag):
                         gamma = gammas[j]
                         b = sparse_algorithm(trunc,q,P,b,gamma)
                         typename = 'sparse DMD'
-                        #typename = r'$\gamma$ = {0:.0E}'.format(gamma)
+                        if len(gammas) > 1:
+                            if j == 0:
+                                typename = r'$\gamma = 10^{-1}$'
+                            if j == 1:
+                                typename = r'$\gamma = 10^{0}$'
+                            if j == 2:
+                                typename = r'$\gamma = 10^{1}$'
+                            if j == 3:
+                                typename = r'$\gamma = 10^{2}$'
                 elif dmd_flag == 3:
                     initialize_variable_project(dict,data,trunc)
                     # Time algorithm 2 from Askham/Kutz 2017
@@ -105,10 +113,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),f_1*2000.0,atol=1000)).nonzero()))
                 f3Index = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
-                kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
-                #kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+                #kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                #kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
+                kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
@@ -153,10 +161,11 @@ def DMD_slide(total,numwindows,dmd_flag):
                 err = np.linalg.norm(X-Bfield[:,starts[i]:ends[i]],'fro') \
                     /np.linalg.norm(X,'fro')
                 print('Final error = ',err)
-                filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                filename = 'power_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.pdf'
                 power_spectrum(b,omega,f_1,filename,typename)
-                filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
-                freq_phase_plot(b,omega,f_1,filename,typename)
+                if len(gammas) == 1:
+                    filename = 'phasePlot_'+str(dictname[:len(dictname)-4])+'_'+str(i)+'.png'
+                    freq_phase_plot(b,omega,f_1,filename,typename)
 
         if dmd_flag == 1:
             dict['Bfield'] = Bfield
@@ -197,8 +206,8 @@ def DMD_slide(total,numwindows,dmd_flag):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 200000
-    eps_prime = 1e-2/gamma
-    eps_dual = 1e-2/gamma
+    eps_prime = 1e-6/gamma**3
+    eps_dual = 1e-6/gamma**3
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -300,7 +309,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 10000
+    maxiter = 40000
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol
