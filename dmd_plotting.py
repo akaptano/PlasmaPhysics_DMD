@@ -25,32 +25,32 @@ def power_spectrum(b,omega,f_1,filename,typename):
     power = (b[sort]*np.conj(b[sort])).astype('float')
     power = power/np.max(power)
     if typename=='DMD':
-        #plt.scatter(np.sort(f_k), \
-        #    power,s=300,c='b',linewidths=3,edgecolors='k')
-        #plt.plot(np.sort(f_k), \
-        #    power,color='b',linewidth=lw,label=typename)
-        plt.semilogy(np.sort(f_k), \
-            power,color='b',linewidth=lw,label=typename, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
+        plt.scatter(np.sort(f_k), \
+            power,s=300,c='b',linewidths=3,edgecolors='k')
+        plt.plot(np.sort(f_k), \
+            power,color='b',label=typename)
+        #plt.semilogy(np.sort(f_k), \
+        #    power,color='b',linewidth=lw,label=typename, \
+        #    path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        #    pe.Normal()],marker='o')
     elif typename=='sparse DMD':
-        #plt.scatter(np.sort(f_k), \
-        #    power,s=300,c='r',linewidths=3,edgecolors='k')
-        #plt.plot(np.sort(f_k), \
-        #    power,color='r',linewidth=lw,label=typename)
-        plt.semilogy(np.sort(f_k), \
-            power,color='r',linewidth=lw,label=typename, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
+        plt.scatter(np.sort(f_k), \
+            power,s=300,c='r',linewidths=3,edgecolors='k')
+        plt.plot(np.sort(f_k), \
+            power,color='r',label=typename)
+        #plt.semilogy(np.sort(f_k), \
+        #    power,color='r',linewidth=lw,label=typename, \
+        #    path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        #    pe.Normal()],marker='o')
     elif typename=='optimized DMD':
-        #plt.scatter(np.sort(f_k), \
-        #    power,s=300,c='g',linewidths=3,edgecolors='k')
-        #plt.plot(np.sort(f_k), \
-        #    power,color='g',linewidth=lw,label=typename)
-        plt.semilogy(np.sort(f_k), \
-            power,color='g',linewidth=lw,label=typename, \
-            path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
-            pe.Normal()])
+        plt.scatter(np.sort(f_k), \
+            power,s=300,c='g',linewidths=3,edgecolors='k')
+        plt.plot(np.sort(f_k), \
+            power,color='g',label=typename)
+        #plt.semilogy(np.sort(f_k), \
+        #    power,color='g',linewidth=lw,label=typename, \
+        #    path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
+        #    pe.Normal()],marker='o')
     elif typename[9]=='=':
         plt.semilogy(np.sort(f_k), \
             power,color=np.ravel(np.random.rand(1,3)),linewidth=lw, \
@@ -58,7 +58,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
     plt.yscale('log')
-    #plt.legend(edgecolor='k',facecolor='gainsboro',loc='upper left',fontsize=ls-8,ncol=3)
+    #plt.legend(edgecolor='k',facecolor='white',loc='upper left',fontsize=ls-8,ncol=3)
     #plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
     #plt.xlabel(r'$f_k$ (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
@@ -76,7 +76,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
     #    f_1,3*f_1,5*f_1,120])
     #ax.set_xticklabels([-120,r'$-f_5$',r'$-f_3$',r'$-f_1$', \
     #    r'$f_1$',r'$f_3$',r'$f_5$',120])
-    plt.ylim((1e-10,1e0))
+    plt.ylim((1e-10,1e1))
     #ax.set_yticks([1e-12,1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     #ax.set_yticklabels([1e-10,1e-8,1e-6,1e-4,1e-2,1e0])
     ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
@@ -124,7 +124,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
             label=typename,alpha=alpha, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    plt.legend(edgecolor='k',facecolor='gainsboro',loc='lower left',fontsize=ls-4)
+    plt.legend(edgecolor='k',facecolor='white',loc='lower left',fontsize=ls-4)
    # plt.ylabel(r'$|b_k|^2/|b_{max}|^2$',fontsize=fs)
    # plt.xlabel(r'$f_k$ (kHz)',fontsize=fs)
     plt.xlim(-3*f_1,3*f_1)
@@ -200,7 +200,7 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.legend([h0.get_label()],edgecolor='k',facecolor='gainsboro',fontsize=ts,loc='upper right')
+    plt.legend([h0.get_label()],edgecolor='k',facecolor='white',fontsize=ts,loc='upper right')
     plt.ylim(-1e2,1e2)
     plt.yscale('symlog',linthreshy=1e-1)
     ax = plt.gca()
@@ -338,7 +338,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
     #ax1.set_yticks([-500,0,500,1000])
     ax1.set_xticks([0,1,2])
     ax1.set_xticklabels([0,1,2])
-    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-10,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='white',fontsize=ls-10,loc='upper left')
     delta_k = np.real(omega)/1000.0/(2*pi)
     f_k = np.imag(omega)/1000.0/(2*pi)
 
@@ -354,7 +354,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
          pe.Normal()])
 
     plt.yscale('log')
-    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-8,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='white',fontsize=ls-8,loc='lower right')
     #plt.xlim(-100,100)
     plt.xlim(-3*f_1,3*f_1)
     plt.grid(True)
@@ -521,7 +521,7 @@ def make_reconstructions(dict,dmd_flag):
     ax = plt.gca()
     ax.tick_params(axis='both', which='major', labelsize=ts)
     ax.tick_params(axis='both', which='minor', labelsize=ts)
-    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper left')
+    plt.legend(edgecolor='k',facecolor='white',fontsize=ls,loc='upper left')
     #plt.ylabel('B (G)',fontsize=fs)
     #plt.ylim((-150,300))
     #ax.set_yticks([-150,0,150,300])
@@ -563,7 +563,7 @@ def make_reconstructions(dict,dmd_flag):
         ax = plt.gca()
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls,loc='upper left')
+        plt.legend(edgecolor='k',facecolor='white',fontsize=ls,loc='upper left')
         #plt.ylabel('B (G)',fontsize=fs)
         plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.png')
         plt.savefig(out_dir+'reconstructions'+str(dictname[:len(dictname)-4])+'_imp.eps')
@@ -768,7 +768,7 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     ax.fill_between([0.0,0.368],0,2*pi,facecolor='k',alpha=0.8)
     #ax.set_xticks([0.37,0.7,1.05])
     #ax.set_xticklabels([0.37,0.7,1.05])
-    plt.legend(edgecolor='k',facecolor='gainsboro',fontsize=ls-12,loc='lower right')
+    plt.legend(edgecolor='k',facecolor='white',fontsize=ls-12,loc='lower right')
     plt.ylim((0,2*pi))
     plt.xlim(0,1.2849)
     #plt.xlim(0.3678,1.052)

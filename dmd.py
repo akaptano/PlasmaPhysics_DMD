@@ -39,7 +39,7 @@ def DMD_slide(total,numwindows,dmd_flag):
         Bfield_anom = np.zeros((r,tsize),dtype='complex')
         dmd_b = []
         dmd_omega = []
-        gammas = [1e-1,1e0,1e1,1e2]
+        gammas = [5e0] #[1e-1,1e0,1e1,1e2]
         for i in range(numwindows):
             for j in range(len(gammas)):
                 tbase = time[starts[i]:ends[i]]
@@ -68,11 +68,13 @@ def DMD_slide(total,numwindows,dmd_flag):
                     if dmd_flag == 2:
                         gamma = gammas[j]
                         b = sparse_algorithm(trunc,q,P,b,gamma)
-                        #typename = 'sparse DMD'
-                        if gamma < 1:
-                            typename = r'$\gamma$ = {0:.1f}'.format(gamma)
+                        if len(gammas) == 1:
+                            typename = 'sparse DMD'
                         else:
-                            typename = r'$\gamma$ = {0:d}'.format(int(gamma))
+                            if gamma < 1:
+                                typename = r'$\gamma$ = {0:.1f}'.format(gamma)
+                            else:
+                                typename = r'$\gamma$ = {0:d}'.format(int(gamma))
                 elif dmd_flag == 3:
                     initialize_variable_project(psi_dict,data,trunc)
                     # Time algorithm 2 from Askham/Kutz 2017
@@ -400,11 +402,11 @@ def DMD_forecast(total,numwindows,dmd_flags):
             pe.Normal()])
         ax = plt.gca()
         textstr = 'Training'
-        props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
+        props = dict(boxstyle='round', facecolor='white', edgecolor='k', alpha=0.5)
         ax.text(0.45, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
         textstr = 'Testing'
-        props = dict(boxstyle='round', facecolor='gainsboro', edgecolor='k', alpha=0.5)
+        props = dict(boxstyle='round', facecolor='white', edgecolor='k', alpha=0.5)
         ax.text(0.75, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
 
@@ -441,13 +443,13 @@ def DMD_forecast(total,numwindows,dmd_flags):
             #plt.ylabel('B (G)',fontsize=fs)
             plt.axvline(x=time_full[tsize]*1000,color='k', \
                 linewidth=lw)
-            plt.legend(edgecolor='k',facecolor='gainsboro',loc='upper left',fontsize=ls)
+            plt.legend(edgecolor='k',facecolor='white',loc='upper left',fontsize=ls)
             ax = plt.gca()
             ax.tick_params(axis='both', which='major', labelsize=ts)
             ax.tick_params(axis='both', which='minor', labelsize=ts)
             #plt.ylim(-150,300)
             #ax.set_yticks([-150,0,150,300])
-            plt.ylim(-500,600)
+            plt.ylim(-600,600)
             ax.set_yticks([-500,0,500])
             plt.grid(True)
         plt.savefig(out_dir+'forecasting.png')
@@ -462,9 +464,9 @@ def DMD_forecast(total,numwindows,dmd_flags):
 # @param b The DMD coefficients to be altered
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
-    max_iters = 200000
-    eps_prime = 1e-5/gamma
-    eps_dual = 1e-5/gamma
+    max_iters = 1000000
+    eps_prime = 3e-7/gamma**2
+    eps_dual = 3e-7/gamma**2
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -506,7 +508,7 @@ def initialize_variable_project(psi_dict,data,trunc):
     U = psi_dict['U']
     X = data
     r = np.shape(X)[0]
-    if dict['forecast']:
+    if psi_dict['forecast']:
         time = psi_dict['sp_time'][t0:t0+int(tf/2)-1]
     else:
         time = psi_dict['sp_time'][t0:tf]
