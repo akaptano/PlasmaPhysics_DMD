@@ -13,7 +13,7 @@ A sample command line run would be:
 
 # Reproducing Results
 
-The .mat files for experimental shots 129175 and 129499, and the BIG-HIT simulation .mat files (with 8 IMPs or 32 IMPs) are included in this repository so that others can explicitly reproduce the results of this work. Adding these large files to the repository requires the use of the "GIT Large File Storage" extension, found here https://git-lfs.github.com/. 
+The .mat files for experimental shots 129175 and 129499, and the BIG-HIT simulation .mat files (with 8 IMPs or 32 IMPs) can be provided on request. Email akaptano@uw.edu for this or any other questions. 
 
 # License 
 
