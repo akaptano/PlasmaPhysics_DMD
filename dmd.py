@@ -113,10 +113,10 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),f_1*2000.0,atol=1000)).nonzero()))
                 f3Index = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
-                #kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                #kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
-                kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
+                kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
+                #kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
+                #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
@@ -206,8 +206,8 @@ def DMD_slide(total,numwindows,dmd_flag):
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
     max_iters = 200000
-    eps_prime = 1e-6/gamma**3
-    eps_dual = 1e-6/gamma**3
+    eps_prime = 1e-2/gamma**3
+    eps_dual = 1e-2/gamma**3
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
@@ -309,7 +309,7 @@ def variable_project(Xt,dict,trunc,starts,ends):
     lamdown = lamup
     ## The maximum number of outer
     ##   loop iterations to use before quitting
-    maxiter = 40000
+    maxiter = 50000
     ## The tolerance for the relative
     ##   error in the residual, i.e. the program will
     ##   terminate if algorithm achieves err < tol

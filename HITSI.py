@@ -119,17 +119,17 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         if dmd[k] > 0 and dmd[k] < 4:
             DMD_slide(total,numwindows,dmd[k])
             make_reconstructions(total[0],dmd[k])
-            toroidal_modes_sp(total[0],dmd[k])
-            poloidal_modes(total[0],dmd[k])
-            bar_plot(total[0])
-            if total[0]['use_IMP']:
-                toroidal_modes_imp(total[0],dmd[k])
-                if k == len(dmd)-1:
-                    toroidal_plot(total[0],dmd[k])
+            #toroidal_modes_sp(total[0],dmd[k])
+            #poloidal_modes(total[0],dmd[k])
+            #if total[0]['use_IMP']:
+            #    toroidal_modes_imp(total[0],dmd[k])
+            #    if k == len(dmd)-1:
+            #        toroidal_plot(total[0],dmd[k])
             if animate_dmd:
                 dmd_animation(total[0],numwindows,dmd[k])
         else:
             print('Invalid --dmd option, will assume no dmd')
+    bar_plot(total[0])
 
 if __name__ == '__main__':
     analysis()

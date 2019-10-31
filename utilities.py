@@ -873,14 +873,15 @@ def bar_plot(psi_dict):
         offset = 3
     tsize = len(t_vec)
     num_IMPs = psi_dict['num_IMPs']
+    nmax = 7
     phis = np.zeros(160*num_IMPs)
     if num_IMPs == 8:
         imp_phis = imp_phis8
-        nmax = 3
+        nmax_imp = 3
         skip = 40
     elif num_IMPs == 32:
         imp_phis = imp_phis32
-        nmax = 10
+        nmax_imp = 10
         skip = 1
     else:
         print('Invalid number for the number of IMPs')
@@ -890,8 +891,7 @@ def bar_plot(psi_dict):
     # subsample as needed
     phis = phis[::skip]
     orig_phis = phis[:len(phis)]
-    amps_total = [] 
-    plt.figure(figsize=(figx, figy))
+    amps_total = []
     for i in range(3):
         if i == 0:
             amp_indices = np.arange(offset+size_bpol+size_btor, \
@@ -906,28 +906,29 @@ def bar_plot(psi_dict):
         Bfield_f1 = psi_dict['sparse_Bfield_f1'][amp_indices,:]
         Bfield_f2 = psi_dict['sparse_Bfield_f2'][amp_indices,:]
         Bfield_f3 = psi_dict['sparse_Bfield_f3'][amp_indices,:]
-        Bfield_kink = psi_dict['sparse_Bfield_kink'][amp_indices,:]
+        Bfield_kink = psi_dict['optimized_Bfield_kink'][amp_indices,:]
         if i == 0:
-            amps = np.zeros((nmax+1,160,tsize,5))
+            amps = np.zeros((nmax_imp+1,160,tsize,5))
             if num_IMPs == 8:
                 bindices = slice(0,29,4)
                 indices = list(range(0,32))
                 del indices[bindices]
                 phis = orig_phis[indices]
                 for k in range(3):
-                    amps[:,k,:,0] = fourier_calc(nmax,tsize,Bfield_f0[k::3,:],phis[k::3])
-                    amps[:,k,:,1] = fourier_calc(nmax,tsize,Bfield_f1[k::3,:],phis[k::3])
-                    amps[:,k,:,2] = fourier_calc(nmax,tsize,Bfield_f2[k::3,:],phis[k::3])
-                    amps[:,k,:,3] = fourier_calc(nmax,tsize,Bfield_f3[k::3,:],phis[k::3])
-                    amps[:,k,:,4] = fourier_calc(nmax,tsize,Bfield_kink[k::3,:],phis[k::3])
+                    amps[:,k,:,0] = fourier_calc(nmax_imp,tsize,Bfield_f0[k::3,:],phis[k::3])
+                    amps[:,k,:,1] = fourier_calc(nmax_imp,tsize,Bfield_f1[k::3,:],phis[k::3])
+                    amps[:,k,:,2] = fourier_calc(nmax_imp,tsize,Bfield_f2[k::3,:],phis[k::3])
+                    amps[:,k,:,3] = fourier_calc(nmax_imp,tsize,Bfield_f3[k::3,:],phis[k::3])
+                    amps[:,k,:,4] = fourier_calc(nmax_imp,tsize,Bfield_kink[k::3,:],phis[k::3])
                 avg_amps = np.mean(abs(amps[:,0:4,:]),axis=1)
             elif num_IMPs == 32:
                 for k in range(160):
-                    amps[:,k,:,0] = fourier_calc(nmax,tsize,Bfield_f0[k::160,:],phis[k::160])
-                    amps[:,k,:,1] = fourier_calc(nmax,tsize,Bfield_f1[k::160,:],phis[k::160])
-                    amps[:,k,:,2] = fourier_calc(nmax,tsize,Bfield_f2[k::160,:],phis[k::160])
-                    amps[:,k,:,3] = fourier_calc(nmax,tsize,Bfield_f3[k::160,:],phis[k::160])
-                    amps[:,k,:,4] = fourier_calc(nmax,tsize,Bfield_kink[k::160,:],phis[k::160])
+                    print(np.shape(Bfield_f0[k::160,:]),np.shape(phis[k::160]))
+                    amps[:,k,:,0] = fourier_calc(nmax_imp,tsize,Bfield_f0[k::160,:],phis[k::160])
+                    amps[:,k,:,1] = fourier_calc(nmax_imp,tsize,Bfield_f1[k::160,:],phis[k::160])
+                    amps[:,k,:,2] = fourier_calc(nmax_imp,tsize,Bfield_f2[k::160,:],phis[k::160])
+                    amps[:,k,:,3] = fourier_calc(nmax_imp,tsize,Bfield_f3[k::160,:],phis[k::160])
+                    amps[:,k,:,4] = fourier_calc(nmax_imp,tsize,Bfield_kink[k::160,:],phis[k::160])
                 avg_amps = np.mean(abs(amps),axis=1)
         if i == 1:
             amps = np.zeros((nmax+1,tsize,5))
@@ -991,21 +992,113 @@ def bar_plot(psi_dict):
                 amps[:,j,:,3] = fourier_calc(nmax,tsize,B_f3,theta)
                 amps[:,j,:,4] = fourier_calc(nmax,tsize,B_kink,theta)
             avg_amps = np.mean(abs(amps),axis=1)
- 
-        amps_total.append(avg_amps) 
 
+        amps_total.append(avg_amps)
+        plt.figure(768,figsize=(figx, figy))
         plt.subplot(1,3,i+1)
         width = 0.1
-        alphas = np.linspace(1.0,0.2,11)
-        for j in range(nmax+1):
-            plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
-                label='n = '+str(j),alpha=alphas[j],edgecolor='k')
-            #ax.set_xticks(np.arange(4)+3*width/2.0)
-            plt.legend(edgecolor='k',facecolor='white',fontsize=ls,loc='upper right')
-        plt.grid(True)
+        alphas = np.linspace(1.0,0.05,11)
         ax = plt.gca()
+        ax.set_axisbelow(True)
+        if i > 0:
+            for j in range(nmax+1):
+                if (j > 3 and nmax_imp == 3) or (j < 4 and nmax_imp == 10):
+                    if i < 2:
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                            alpha=alphas[j],edgecolor='k')
+                    if i == 2:
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                            alpha=alphas[j],edgecolor='k')
+                else:
+                    if i < 2:
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                            label='n = '+str(j),alpha=alphas[j],edgecolor='k')
+                    if i == 2:
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                            label='m = '+str(j),alpha=alphas[j],edgecolor='k')
+            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            ax.set_xticks(np.arange(4)+7*width/2.0)
+        else:
+            nm = min(nmax,nmax_imp)
+            for j in range(nm+1): #nmax_imp if want all the modes
+                if j < 4 and nmax_imp != 3:
+                    plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                        alpha=alphas[j],edgecolor='k')
+                else:
+                    plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
+                        label='n = '+str(j),alpha=alphas[j],edgecolor='k')
+            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            if nmax_imp != 3:
+                ax.set_xticks(np.arange(4)+7*width/2.0)
+            else:
+                ax.set_xticks(np.arange(4)+3*width/2.0)
+        plt.yscale('log')
+        plt.ylim(1e-2,1e3)
+        plt.grid(True)
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
-        ax.set_xticks([0,1,2,3])
-        ax.set_xticklabels([r'$f_0$',r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$'])
+     #   ax.set_xticks([0,1,2,3])
+        ax.set_yticks([1e-2,1e-1,1e0,1e1,1e2,1e3])
+        if i != 0:
+            ax.set_yticklabels([])
+            #ax.set_yticklabels([])
+        ax.set_xticklabels([r'$f_0$',r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$','',''])
+
+        plt.figure(769,figsize=(figx, figy))
+        plt.subplot(1,3,i+1)
+        width = 0.1
+        alphas = np.linspace(1.0,0.05,11)
+        ax = plt.gca()
+        ax.set_axisbelow(True)
+        if i > 0:
+            for j in range(nmax+1):
+                if (j > 3 and nmax_imp == 3) or (j < 4 and nmax_imp == 10):
+                    if i < 2:
+                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                            alpha=alphas[j],edgecolor='k')
+                    if i == 2:
+                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                            alpha=alphas[j],edgecolor='k')
+                else:
+                    if i < 2:
+                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                            label='n = '+str(j),alpha=alphas[j],edgecolor='k')
+                    if i == 2:
+                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                            label='m = '+str(j),alpha=alphas[j],edgecolor='k')
+            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            ax.set_xticks(np.arange(1)+7*width/2.0)
+        else:
+            nm = min(nmax,nmax_imp)
+            for j in range(nm+1): #nmax_imp if want all the modes
+                if j < 4 and nmax_imp != 3:
+                    plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        alpha=alphas[j],edgecolor='k')
+                else:
+                    plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        label='n = '+str(j),alpha=alphas[j],edgecolor='k')
+            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            if nmax_imp != 3:
+                ax.set_xticks(np.arange(1)+7*width/2.0)
+            else:
+                ax.set_xticks(np.arange(1)+3*width/2.0)
+        plt.yscale('log')
+        plt.ylim(1e-2,1e3)
+        plt.grid(True)
+        ax.tick_params(axis='both', which='major', labelsize=ts)
+        ax.tick_params(axis='both', which='minor', labelsize=ts)
+        #   ax.set_xticks([0,1,2,3])
+        ax.set_yticks([1e-2,1e-1,1e0,1e1,1e2,1e3])
+        if i != 0:
+            ax.set_yticklabels([])
+            #ax.set_yticklabels([])
+        ax.set_xticklabels([r'$f_{kink}$'])
+
+    plt.figure(768)
     plt.savefig(out_dir+'bars.pdf')
+    plt.savefig(out_dir+'bars.png')
+    plt.savefig(out_dir+'bars.eps')
+    plt.figure(769)
+    plt.savefig(out_dir+'bars_kinks.pdf')
+    plt.savefig(out_dir+'bars_kinks.png')
+    plt.savefig(out_dir+'bars_kinks.eps')
