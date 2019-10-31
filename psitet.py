@@ -3,7 +3,7 @@
 ## This is a Doxygen-generated documentation page for the
 ## dmdpaper github repo at https://github.com/akaptano/dmdpaper.
 ##
-## This repository is for the DMD paper published by Alan Kaptanoglu et al.
+## This repository is for the DMD paper published by A. A. Kaptanoglu et al.
 ##
 ## Compatibility requires installation of Python 3.7 and the typical
 ## python packages like scipy, numpy, matplotlib, and numba

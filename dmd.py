@@ -56,7 +56,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                     S = np.diag(Sdmd)
                     A = np.dot(np.dot(np.transpose(Udmd),Xprime),Vdmd/Sdmd)
                     eigvals,Y = np.linalg.eig(A)
-                    Bt = np.dot(np.dot(Xprime,Vdmd/Sdmd),Y)
+                    Ct = np.dot(np.dot(Xprime,Vdmd/Sdmd),Y)
                     omega = np.log(eigvals)/dt
                     VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
                     Vandermonde = np.transpose(VandermondeT)
@@ -88,9 +88,9 @@ def DMD_slide(total,numwindows,dmd_flag):
                         np.transpose(X),dict,trunc,starts[i],ends[i])
                     toc = Clock.time()
                     print('time in variable_projection = ',toc-tic,' s')
-                    Bt = np.transpose(B)
-                    b = np.conj(np.transpose(np.sqrt(np.sum(abs(Bt)**2,axis=0))))
-                    Bt = np.dot(Bt,np.diag(1.0/b))
+                    Ct = np.transpose(B)
+                    b = np.conj(np.transpose(np.sqrt(np.sum(abs(Ct)**2,axis=0))))
+                    Ct = np.dot(Ct,np.diag(1.0/b))
                     typename = 'optimized DMD'
                     VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
                     Vandermonde = np.transpose(VandermondeT)
@@ -98,11 +98,9 @@ def DMD_slide(total,numwindows,dmd_flag):
                 omega[np.isnan(omega).nonzero()] = 0
                 dmd_b.append(b)
                 dmd_omega.append(omega)
-                dmd_Bt = Bt
-                #sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
+                dmd_Ct = Ct
+                # this section gets all the coherent modes analyzed for the paper
                 sortd = np.argsort(np.real(omega)/(2*pi*1000.0))
-                print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
                 equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero())
                 if equilIndex.size==0:
                     equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
@@ -115,8 +113,6 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
                 kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
                 kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
-                #kinkIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                #    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
@@ -128,24 +124,23 @@ def DMD_slide(total,numwindows,dmd_flag):
                 print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
                 for mode in range(trunc):
                     Bfield[:,starts[i]:ends[i]] += \
-                        0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                        0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
                     if mode in equilIndex:
                         Bfield_f0[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                            0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
                     if mode in f1Index:
                         Bfield_f1[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                            0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
                     if mode in f2Index:
                         Bfield_f2[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                            0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
                     if mode in f3Index:
                         Bfield_f3[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
+                            0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
                     if mode in kinkIndex:
-                        print(mode,omega[mode]/(2*pi*1000),b[mode])
                         Bfield_kink[:,starts[i]:ends[i]] += \
-                            0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
-                #exit()
+                            0.5*b[mode]*np.outer(Ct[:,mode],Vandermonde[mode,:])
+
                 Bfield_f1[:,starts[i]:ends[i]] += \
                     np.conj(Bfield_f1[:,starts[i]:ends[i]])
                 Bfield_f2[:,starts[i]:ends[i]] += \
@@ -176,7 +171,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             dict['Bfield_kink'] = Bfield_kink
             dict['b'] = np.asarray(dmd_b)
             dict['omega'] = np.asarray(dmd_omega)
-            dict['Bt'] = dmd_Bt
+            dict['Ct'] = dmd_Ct
         elif dmd_flag == 2:
             dict['sparse_Bfield'] = Bfield
             dict['sparse_Bfield_f0'] = Bfield_f0
@@ -186,7 +181,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             dict['sparse_Bfield_kink'] = Bfield_kink
             dict['sparse_b'] = np.asarray(dmd_b)
             dict['sparse_omega'] = np.asarray(dmd_omega)
-            dict['sparse_Bt'] = dmd_Bt
+            dict['sparse_Ct'] = dmd_Ct
         elif dmd_flag == 3:
             dict['optimized_Bfield'] = Bfield
             dict['optimized_Bfield_f0'] = Bfield_f0
@@ -196,7 +191,7 @@ def DMD_slide(total,numwindows,dmd_flag):
             dict['optimized_Bfield_kink'] = Bfield_kink
             dict['optimized_b'] = np.asarray(dmd_b)
             dict['optimized_omega'] = np.asarray(dmd_omega)
-            dict['optimized_Bt'] = dmd_Bt
+            dict['optimized_Ct'] = dmd_Ct
 
 ## Performs the sparse DMD algorithm (see Jovanovic 2014)
 # @param trunc Truncation number for the SVD
@@ -364,7 +359,6 @@ def variable_project(Xt,dict,trunc,starts,ends):
             res,b,trunc,djacmat,scales)
         Q1,Rprime = TSQR1(djacmat,trunc,numThreads,Q1,Rprime,skip)
         Q2,R = TSQR2(Rprime)
-        #Q2,R = np.linalg.qr(Rprime)
         Q = TSQR3(Q1,Q2,trunc,numThreads,Q,skip)
         rjac = R
         rhstop = np.dot(np.conj(np.transpose(Q)), \
@@ -376,14 +370,12 @@ def variable_project(Xt,dict,trunc,starts,ends):
 
         A = np.vstack((rjac,lambda0*np.diag(scales)))
         delta0 = parallel_lstsq(A,rhs)
-        #delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
         # new omega guess
         omega0 = omega - np.ravel(delta0)
         # corresponding residual
         VandermondeT = make_VandermondeT(omega0,time)
 
         b0 = parallel_lstsq(VandermondeT,Xt)
-        #b0,g1,g2,g3 = np.linalg.lstsq(VandermondeT,Xt)
         res0 = Xt-np.dot(VandermondeT,b0)
         err0 = np.linalg.norm(res0,'fro')/res_scale
         # check if this is an improvement
@@ -394,11 +386,9 @@ def variable_project(Xt,dict,trunc,starts,ends):
             lambda1 = lambda0/lamdown
             A = np.vstack((rjac,lambda1*np.diag(scales)))
             delta1 = parallel_lstsq(A,rhs)
-            #delta1,g1,g2,g3 = np.linalg.lstsq(A,rhs)
             omega1 = omega - np.ravel(delta1)
             VandermondeT = make_VandermondeT(omega1,time)
             b1 = parallel_lstsq(VandermondeT,Xt)
-            #b1,g1,g2,g3 = np.linalg.lstsq(VandermondeT,Xt)
             res1 = Xt-np.dot(VandermondeT,b1)
             err1 = np.linalg.norm(res1,'fro')/res_scale
 
@@ -421,11 +411,9 @@ def variable_project(Xt,dict,trunc,starts,ends):
                 lambda0 = lambda0*lamup
                 A = np.vstack((rjac,lambda0*np.diag(scales)))
                 delta0 = parallel_lstsq(A,rhs)
-                #delta0,g1,g2,g3 = np.linalg.lstsq(A,rhs)
                 omega0 = omega - np.ravel(delta0)
                 VandermondeT = make_VandermondeT(omega0,time)
                 b0 = parallel_lstsq(VandermondeT,Xt)
-                #b0,g1,g2,g3 = np.linalg.lstsq(VandermondeT,Xt)
                 res0 = Xt-np.dot(VandermondeT,b0)
                 err0 = np.linalg.norm(res0,'fro')/res_scale
                 if (err0 < errlast):

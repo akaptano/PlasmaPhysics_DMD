@@ -6,14 +6,12 @@
 from plot_attributes import *
 from psitet_load import loadshot
 from utilities import SVD, \
-    toroidal_modes_sp, poloidal_modes, \
-    toroidal_modes_imp, plot_itor, \
-    plot_chronos, write_Bfield_csv, \
+    plot_itor, plot_chronos,
+    write_Bfield_csv, \
     bar_plot
 from dmd import DMD_slide
 from dmd_plotting import \
     make_reconstructions, \
-    dmd_animation, \
     toroidal_plot
 import click
 
@@ -30,10 +28,6 @@ import click
 @click.option('--directory', \
     default='/media/removable/SD Card/Two-Temperature-Post-Processing/', \
     help='Directory containing the .mat files')
-@click.option('--animate_dmd', \
-    default=False,type=bool, \
-    help='Whether to make a sliding window animation '+ \
-        'from the results of a DMD method (default sparse DMD)')
 @click.option('--filenames', \
     default=['exppsi_129499.mat'],multiple=True, \
     help='A list of all the filenames, which '+ \
@@ -64,7 +58,7 @@ import click
 ## by declaring --dmd to be of type (int,int). If a description
 ## of the various click options is desired, just type
 ## python HITSI.py --help
-def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
+def analysis(dmd,numwindows,directory,filenames,freqs, \
     imp,limits,nprocs,trunc):
 
     print('Running with the following command line options: ')
@@ -75,7 +69,6 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
     print('File(s) to load = ',filenames)
     print('Frequencies corresponding to those files = ',freqs)
     print('Time limits for each of the files = ',limits)
-    print('Make a sliding window spectrogram?: ',animate_dmd)
     print('Number of threads for numba = ',nprocs)
 
     is_HITSI3 = False
@@ -83,7 +76,7 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         is_HITSI3=True
     filenames=np.atleast_1d(filenames)
     freqs=np.atleast_1d(freqs)
-    total = []
+    all_dicts = []
     for i in range(len(filenames)):
         filename = filenames[i]
         f_1 = np.atleast_1d(freqs[i])
@@ -106,30 +99,24 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         temp_dict['nprocs'] = nprocs
         temp_dict['trunc'] = trunc
         temp_dict['f_1'] = f_1
-        total.append(temp_dict)
+        all_dicts.append(temp_dict)
 
-    total = np.asarray(total).flatten()
+    all_dicts = np.asarray(all_dicts).flatten()
     for i in range(len(filenames)):
-        SVD(total[i])
-        #plot_itor(total[i])
-        #plot_chronos(total[i])
-    #write_Bfield_csv(total[0])
-    #exit()
+        SVD(all_dicts[i])
+        plot_itor(all_dicts[i])
+        plot_chronos(all_dicts[i])
+
     for k in range(len(dmd)):
         if dmd[k] > 0 and dmd[k] < 4:
-            DMD_slide(total,numwindows,dmd[k])
-            make_reconstructions(total[0],dmd[k])
-            #toroidal_modes_sp(total[0],dmd[k])
-            #poloidal_modes(total[0],dmd[k])
-            #if total[0]['use_IMP']:
-            #    toroidal_modes_imp(total[0],dmd[k])
-            #    if k == len(dmd)-1:
-            #        toroidal_plot(total[0],dmd[k])
-            if animate_dmd:
-                dmd_animation(total[0],numwindows,dmd[k])
+            DMD_slide(all_dicts,numwindows,dmd[k])
+            make_reconstructions(all_dicts[0],dmd[k])
+            if all_dicts[0]['use_IMP']:
+                if k == len(dmd)-1:
+                    toroidal_plot(all_dicts[0],dmd[k])
         else:
             print('Invalid --dmd option, will assume no dmd')
-    bar_plot(total[0])
+    bar_plot(all_dicts[0])
 
 if __name__ == '__main__':
     analysis()

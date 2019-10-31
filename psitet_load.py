@@ -320,9 +320,9 @@ def flatten_object(dict):
             dict[key] = np.reshape(dict[key], \
                 (np.shape(dict[key])[0],np.shape(dict[key])[2]))
 
-## Finds the appropriate start and end times for a given shot
-## based on when the toroidal current becomes non-trivial
+## Function which sets the time limits of the data
 # @param dict A psi-tet dictionary
+# @param limits An array of two floats indicating the analysis window
 def get_time_limits(dict,limits):
     idx1 = (np.abs(dict['sp_time'] - limits[0]*1e-3)).argmin()
     idx2 = (np.abs(dict['sp_time'] - limits[1]*1e-3)).argmin()
