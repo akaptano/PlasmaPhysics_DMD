@@ -69,7 +69,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                         gamma = gammas[j]
                         b = sparse_algorithm(trunc,q,P,b,gamma)
                         if len(gammas) == 1:
-                            typename = 'sparse DMD'
+                            typename = 'sparsity-promoting DMD'
                         else:
                             if gamma < 1:
                                 typename = r'$\gamma$ = {0:.1f}'.format(gamma)
@@ -237,7 +237,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
                     if dmd_flag == 2:
                         gamma = 10.0
                         b = sparse_algorithm(trunc,q,P,b,gamma)
-                        typename = 'sparse DMD'
+                        typename = 'sparsity-promoting DMD'
                 elif dmd_flag == 3:
                     #initialize_variable_project(psi_dict,data,trunc,True)
                     # Time algorithm 2 from Askham/Kutz 2017
@@ -389,10 +389,11 @@ def DMD_forecast(total,numwindows,dmd_flags):
             offset = 3
         else:
             offset = 2
+        plt.figure(21914,figsize=(figx, figy+12))
         plt.subplot(3,1,1)
         plt.plot(time_full*1000, \
             psi_dict['full_data'][index+offset,:]*1e4,'k', \
-            linewidth=lw,label='True Signal', \
+            linewidth=lw,label='true signal', \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
         plt.plot(time_full*1000, \
@@ -401,11 +402,11 @@ def DMD_forecast(total,numwindows,dmd_flags):
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
         ax = plt.gca()
-        textstr = 'Training'
+        textstr = 'training'
         props = dict(boxstyle='round', facecolor='white', edgecolor='k', alpha=0.5)
         ax.text(0.45, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
-        textstr = 'Testing'
+        textstr = 'testing'
         props = dict(boxstyle='round', facecolor='white', edgecolor='k', alpha=0.5)
         ax.text(0.75, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
@@ -417,7 +418,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
         plt.plot(time_full*1000, \
-            sdmd_data[index+offset,:]*1e4,'r',label='sparse DMD', \
+            sdmd_data[index+offset,:]*1e4,'r',label='sparsity-promoting DMD', \
             linewidth=lw, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
@@ -436,6 +437,9 @@ def DMD_forecast(total,numwindows,dmd_flags):
 
         for i in range(1,4):
             plt.subplot(3,1,i)
+            ax = plt.gca()
+            if i<3:
+                ax.set_xticklabels([])
             #if i==1:
             #    plt.title('Surface Probe: B_L01T000',fontsize=fs)
             #if i==3:
@@ -444,7 +448,6 @@ def DMD_forecast(total,numwindows,dmd_flags):
             plt.axvline(x=time_full[tsize]*1000,color='k', \
                 linewidth=lw)
             plt.legend(edgecolor='k',facecolor='white',loc='upper left',fontsize=ls)
-            ax = plt.gca()
             ax.tick_params(axis='both', which='major', labelsize=ts)
             ax.tick_params(axis='both', which='minor', labelsize=ts)
             #plt.ylim(-150,300)

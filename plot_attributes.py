@@ -25,7 +25,7 @@ fs = 40
 ## Fontsize for axis ticks
 ts = 30
 ## Fontsize for pyplot legends
-ls = 32
+ls = 26
 ## Markersize for scatter plots
 ms = 20
 ## Linewidth for line plots

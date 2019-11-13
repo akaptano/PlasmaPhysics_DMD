@@ -17,8 +17,7 @@ from mpl_toolkits.mplot3d import Axes3D
 # @param filename Name of the file corresponding to the shot
 # @param typename type string indicating which algorithm is being used
 def power_spectrum(b,omega,f_1,filename,typename):
-    plt.figure(1000,figsize=(figx, figy+12))
-    plt.subplot(4,1,4)
+    plt.figure(1005,figsize=(figx, figy+12))
     f_k = np.imag(omega)/(pi*2*1000.0)
     delta_k = abs(np.real(omega)/(pi*2*1000.0))
     sort = np.argsort(f_k)
@@ -33,7 +32,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
         #    power,color='b',linewidth=lw,label=typename, \
         #    path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
         #    pe.Normal()],marker='o')
-    elif typename=='sparse DMD':
+    elif typename=='sparsity-promoting DMD':
         plt.scatter(np.sort(f_k), \
             power,s=300,c='r',linewidths=3,edgecolors='k')
         plt.plot(np.sort(f_k), \
@@ -99,7 +98,7 @@ def power_spectrum(b,omega,f_1,filename,typename):
             power,color='b',linewidth=lw,label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
-    elif typename=='sparse DMD':
+    elif typename=='sparsity-promoting DMD':
         plt.semilogy(np.sort(f_k), \
             power,color='r',linewidth=lw,label=typename, \
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
@@ -176,34 +175,49 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
     plt.figure(1000,figsize=(figx, figy+12))
     #plt.subplot(2,1,1)
     if typename=='DMD':
-        plt.subplot(4,1,1)
+        plt.subplot(3,1,1)
         for snum in range(len(delta_k)):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='b',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
-    elif typename=='sparse DMD' or typename[9] == '=':
-        plt.subplot(4,1,3)
+            ax = plt.gca()
+            ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
+                f_1,2*f_1,3*f_1])
+            ax.set_xticklabels([])
+    elif typename=='sparsity-promoting DMD' or typename[9] == '=':
+        plt.subplot(3,1,3)
         for snum in range(len(delta_k)):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
+            ax = plt.gca()
+            ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
+                f_1,2*f_1,3*f_1])
+            ax.set_xticklabels([r'$-f_3^{inj}$',r'$-f_2^{inj}$',r'$-f_1^{inj}$',0, \
+                r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$'])
+            ax.tick_params(axis='both', which='major', labelsize=ts)
+            ax.tick_params(axis='both', which='minor', labelsize=ts)
+ 
         #plt.scatter(f_k,delta_k,c=amp,s=amp,cmap=plt.cm.get_cmap('Reds'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
         #plt.xlabel(r'f (kHz)',fontsize=fs)
     elif typename=='optimized DMD':
-        plt.subplot(4,1,2)
+        plt.subplot(3,1,2)
         for snum in range(len(delta_k)):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='g',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
+            ax = plt.gca()
+            ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
+                f_1,2*f_1,3*f_1])
+            ax.set_xticklabels([])
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)
-    plt.legend([h0.get_label()],edgecolor='k',facecolor='white',fontsize=ts,loc='upper right')
-    plt.ylim(-1e2,1e2)
+    plt.legend([h0.get_label()],edgecolor='k',facecolor='white',fontsize=ls,loc='upper left')
+    plt.ylim(-2e2,2e2)
     plt.yscale('symlog',linthreshy=1e-1)
-    ax = plt.gca()
     ax.set_yticks([-1e2,-1,0,1,1e2])
     plt.axhline(y=0,color='k',linewidth=3,linestyle='--')
     #ax.set_yticklabels([r'$-10^2$','',r'$-10^1$','',r'$-10^{-1}$','',0,'',r'$10^{-1}$','',r'$10^1$'])
@@ -215,9 +229,6 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
     plt.grid(True)
     #ax.set_xticks([-120,-5*f_1,-3*f_1,-f_1, \
     #    f_1,3*f_1,5*f_1,120])
-    ax.set_xticks([-3*f_1,-2*f_1,-f_1, \
-        0,f_1,2*f_1,3*f_1])
-    ax.set_xticklabels([])
     #ax.set_xticklabels(['-100',r'$-f_5$',r'$-f_3$',r'$-f_1$', \
     #    '0',r'$f_1$',r'$f_3$',r'$f_5$','100'])
     #ax.set_xticklabels([r'$-f_3$',r'$-f_2$',r'$-f_1$', \
@@ -258,7 +269,7 @@ def dmd_animation(dict,numwindows,dmd_flag):
             typename = 'DMD'
         elif dmd_flag == 2:
             moviename = out_dir+'sdmd_movie.mp4'
-            typename = 'sparse DMD'
+            typename = 'sparsity-promoting DMD'
         elif dmd_flag == 3:
             moviename = out_dir+'odmd_movie.mp4'
             typename = 'optimized DMD'
@@ -323,7 +334,7 @@ def dmd_update(i,dict,windowsize,numwindows,starts,ends,dmd_flag):
         label='B_L01T000',linewidth=lw)
 
     plt.plot(time[starts[i]:ends[i]]*1000,Bfield[index+inj_index,starts[i]:ends[i]]*1e4,'r',\
-        label='sparse DMD',linewidth=lw)
+        label='sparsity-promoting DMD',linewidth=lw)
         #dict['tcurr'][t0:tf]/1000.0,'r')
     plt.axvline(dict['sp_time'][t0+starts[i]]*1000,color='k')
     plt.axvline(dict['sp_time'][t0+ends[i]]*1000,color='k')
@@ -501,7 +512,7 @@ def make_reconstructions(dict,dmd_flag):
     elif dmd_flag==2:
         plt.subplot(3,1,2)
         reconstr = dict['sparse_Bfield']
-        labelstring = 'sparse DMD'
+        labelstring = 'sparsity-promoting DMD'
         color = 'r'
     elif dmd_flag==3:
         plt.subplot(3,1,3)
@@ -542,7 +553,7 @@ def make_reconstructions(dict,dmd_flag):
     elif dmd_flag==2:
         plt.subplot(3,1,2)
         reconstr = dict['sparse_Bfield']
-        labelstring = 'sparse DMD'
+        labelstring = 'sparsity-promoting DMD'
         color = 'r'
     elif dmd_flag==3:
         plt.subplot(3,1,3)
