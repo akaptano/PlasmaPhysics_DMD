@@ -6,7 +6,7 @@
 from plot_attributes import *
 from psitet_load import loadshot
 from utilities import SVD, \
-    plot_itor, plot_chronos,
+    plot_itor, plot_chronos, \
     write_Bfield_csv, \
     bar_plot
 from dmd import DMD_slide

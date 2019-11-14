@@ -305,7 +305,7 @@ def toroidal_plot(dict,dmd_flag):
     tf = dict['tf']
     time = dict['sp_time'][t0:tf]*1000.0
     tsize = len(time)
-    tstep = 500
+    tstep = 1
     if dmd_flag == 3:
         tstep = 1
     FPS = 4
@@ -402,6 +402,9 @@ def toroidal_plot(dict,dmd_flag):
     midplanePhi = np.linspace(-2*pi,4*pi,len(imp_rads)*3)
     midplaneR, midplanePhi = np.meshgrid(imp_rads,midplanePhi)
     moviename = out_dir+'toroidal_Rphi_reconstruction.mp4'
+    print(np.shape(rorig),np.shape(phiorig),np.shape(movie_bpol), \
+        np.shape(midplaneR),np.shape(midplanePhi))
+    exit()
     ani = animation.FuncAnimation( \
         fig, update_tor_Rphi, range(0,tsize,tstep), \
         fargs=(movie_bpol,midplaneR,midplanePhi, \
@@ -412,7 +415,21 @@ def toroidal_plot(dict,dmd_flag):
     plt.savefig(out_dir+'contour.eps')
     plt.savefig(out_dir+'contour.pdf')
 
-    bpol_imp = bpol_imp - bpol_f1_imp - bpol_f0_imp
+    bpol_imp = bpol_imp - bpol_f0_imp
+    movie_bpol = np.vstack((bpol_imp,bpol_imp))
+    movie_bpol = np.vstack((movie_bpol,bpol_imp))
+    moviename = out_dir+'toroidal_Rphi_eqsubtracted_reconstruction.mp4'
+    ani = animation.FuncAnimation( \
+        fig, update_tor_Rphi, range(0,tsize,tstep), \
+        fargs=(movie_bpol,midplaneR,midplanePhi, \
+        rorig,phiorig,time),repeat=False, \
+        interval=100, blit=False)
+    ani.save(moviename,fps=FPS)
+    update_tor_Rphi(tstep,movie_bpol,midplaneR,midplanePhi,rorig,phiorig,time)
+    plt.savefig(out_dir+'contour_eqsubtracted.eps')
+    plt.savefig(out_dir+'contour_eqsubtracted.pdf')
+
+    bpol_imp = bpol_imp - bpol_f1_imp
     movie_bpol = np.vstack((bpol_imp,bpol_imp))
     movie_bpol = np.vstack((movie_bpol,bpol_imp))
     moviename = out_dir+'toroidal_Rphi_subtracted_reconstruction.mp4'
@@ -558,17 +575,17 @@ def update_tor_Rphi(frame,Bpol,midplaneR,midplanePhi,R,phi,time):
     contour = plt.contourf(midplaneR,midplanePhi, \
         grid_bpol,v,cmap=colormap,label=r'$B_\theta$', \
         norm=colors.SymLogNorm(linthresh=1e-3,linscale=1e-3))
-    cbar = plt.colorbar(ticks=v,extend='both')
-    cbar.ax.tick_params(labelsize=ts)
-    cbar.ax.set_yticks([-1, -0.1, -0.01, -0.001, \
-        0.001,0.01,0.1,1])
-    cbar.ax.set_yticklabels(['-1','','', '-0.1','','', '-0.01', '', \
-        '','','','','','0.01','','','0.1','','','1'])
+    #cbar = plt.colorbar(ticks=v,extend='both')
+    #cbar.ax.tick_params(labelsize=ts)
+    #cbar.ax.set_yticks([-1, -0.1, -0.01, -0.001, \
+    #    0.001,0.01,0.1,1])
+    #cbar.ax.set_yticklabels(['-1','','', '-0.1','','', '-0.01', '', \
+    #    '','','','','','0.01','','','0.1','','','1'])
     #ax.set_xticks([])
     ax.set_xticks([0,0.25,0.5,0.75,1.0,1.25])
     ax.set_xticklabels(['0','','0.5','','1',''])
-    ax.fill_between([1.052,1.2849],0,2*pi,facecolor='lightgrey')
-    ax.fill_between([0.0,0.368],0,2*pi,facecolor='lightgrey')
+    #ax.fill_between([1.052,1.2849],0,2*pi,facecolor='lightgrey')
+    #ax.fill_between([0.0,0.368],0,2*pi,facecolor='lightgrey')
     #ax.set_xticks([0.37,0.7,1.05])
     #ax.set_xticklabels([0.37,0.7,1.05])
     #plt.legend(edgecolor='k',facecolor='white',fontsize=50,loc='lower left',

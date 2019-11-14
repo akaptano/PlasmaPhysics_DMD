@@ -381,7 +381,7 @@ def bar_plot(psi_dict):
         Bfield_f1 = psi_dict['sparse_Bfield_f1'][amp_indices,:]
         Bfield_f2 = psi_dict['sparse_Bfield_f2'][amp_indices,:]
         Bfield_f3 = psi_dict['sparse_Bfield_f3'][amp_indices,:]
-        Bfield_kink = psi_dict['optimized_Bfield_kink'][amp_indices,:]
+        Bfield_kink = psi_dict['sparse_Bfield_kink'][amp_indices,:]
         if i == 0:
             amps = np.zeros((nmax_imp+1,160,tsize,5))
             if num_IMPs == 8:
@@ -415,6 +415,7 @@ def bar_plot(psi_dict):
             amps[:,:,4] = fourier_calc(nmax,tsize,Bfield_kink,phi)
             avg_amps = abs(amps)
         if i == 2:
+            R0_pol = psi_dict['R0_pol']
             amps = np.zeros((nmax+1,4,tsize,5))
             # Find the poloidal gap probes
             k1 = 0
@@ -441,7 +442,9 @@ def bar_plot(psi_dict):
                     temp_B_kink[k2, :] = Bfield_kink[j, :tsize]
                 if key[5:9] == 'P225' and \
                     key[2:5] != 'L05' and key[2:5] != 'L06':
-                    temp_theta[k1] = sp_name_dict[key][3]
+                    ind = np.ravel(np.where(np.isclose(sp_name_dict[key][2],imp_phis32)))[0]
+                    temp_theta[k1] = np.arctan2((sp_name_dict[key][1]), \
+                        (sp_name_dict[key][0]-np.mean(R0_pol[0,ind,:])))
                     k1 = k1 + 1
                 if key[5] == 'P':
                     j = j + 1
@@ -469,15 +472,16 @@ def bar_plot(psi_dict):
             avg_amps = np.mean(abs(amps),axis=1)
 
         amps_total.append(avg_amps)
-        plt.figure(768,figsize=(figx, figy))
-        plt.subplot(1,3,i+1)
+        plt.figure(768+i,figsize=(figx, figy))
+        #plt.subplot(1,3,i+1)
         width = 0.1
         alphas = np.linspace(1.0,0.05,11)
         ax = plt.gca()
         ax.set_axisbelow(True)
         if i > 0:
             for j in range(nmax+1):
-                if (j > 3 and nmax_imp == 3) or (j < 4 and nmax_imp == 10):
+                #if (j > 3 and nmax_imp == 3) or (j < 4 and nmax_imp == 10):
+                if (j < 4 and nmax_imp == 10):
                     if i < 2:
                         plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
                             alpha=alphas[j],edgecolor='k')
@@ -491,7 +495,8 @@ def bar_plot(psi_dict):
                     if i == 2:
                         plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
                             label='m = '+str(j),alpha=alphas[j],edgecolor='k')
-            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            #plt.legend(edgecolor='k',facecolor='white',framealpha=1, \
+            #    ncol=8,fontsize=14,loc='upper right')
             ax.set_xticks(np.arange(4)+7*width/2.0)
         else:
             nm = min(nmax,nmax_imp)
@@ -502,7 +507,7 @@ def bar_plot(psi_dict):
                 else:
                     plt.bar(np.arange(4)+width*j,avg_amps[j,0,0:4]*1e4,width, \
                         label='n = '+str(j),alpha=alphas[j],edgecolor='k')
-            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            #plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
             if nmax_imp != 3:
                 ax.set_xticks(np.arange(4)+7*width/2.0)
             else:
@@ -513,14 +518,14 @@ def bar_plot(psi_dict):
         ax.tick_params(axis='both', which='major', labelsize=ts)
         ax.tick_params(axis='both', which='minor', labelsize=ts)
      #   ax.set_xticks([0,1,2,3])
-        ax.set_yticks([1e-2,1e-1,1e0,1e1,1e2,1e3])
-        if i != 0:
-            ax.set_yticklabels([])
+        ax.set_yticks([1e-2,1e-1,1e0,1e1,1e2,1e3,])
+        #if i != 0:
+        ax.set_yticklabels([])
             #ax.set_yticklabels([])
         ax.set_xticklabels([r'$f_0$',r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$','',''])
 
-        plt.figure(769,figsize=(figx, figy))
-        plt.subplot(1,3,i+1)
+        plt.figure(868+i,figsize=(figx, figy))
+        #plt.subplot(1,3,i+1)
         width = 0.1
         alphas = np.linspace(1.0,0.05,11)
         ax = plt.gca()
@@ -529,30 +534,30 @@ def bar_plot(psi_dict):
             for j in range(nmax+1):
                 if (j > 3 and nmax_imp == 3) or (j < 4 and nmax_imp == 10):
                     if i < 2:
-                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                             alpha=alphas[j],edgecolor='k')
                     if i == 2:
-                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                             alpha=alphas[j],edgecolor='k')
                 else:
                     if i < 2:
-                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                             label='n = '+str(j),alpha=alphas[j],edgecolor='k')
                     if i == 2:
-                        plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                        plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                             label='m = '+str(j),alpha=alphas[j],edgecolor='k')
-            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            #plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
             ax.set_xticks(np.arange(1)+7*width/2.0)
         else:
             nm = min(nmax,nmax_imp)
             for j in range(nm+1): #nmax_imp if want all the modes
                 if j < 4 and nmax_imp != 3:
-                    plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                    plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                         alpha=alphas[j],edgecolor='k')
                 else:
-                    plt.bar(np.arange(1)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
+                    plt.bar(np.arange(4)+width*j,avg_amps[j,tsize-2,4]*1e4,width, \
                         label='n = '+str(j),alpha=alphas[j],edgecolor='k')
-            plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
+            #plt.legend(edgecolor='k',facecolor='white',framealpha=1,fontsize=20,loc='upper right')
             if nmax_imp != 3:
                 ax.set_xticks(np.arange(1)+7*width/2.0)
             else:
@@ -564,16 +569,16 @@ def bar_plot(psi_dict):
         ax.tick_params(axis='both', which='minor', labelsize=ts)
         #   ax.set_xticks([0,1,2,3])
         ax.set_yticks([1e-2,1e-1,1e0,1e1,1e2,1e3])
-        if i != 0:
-            ax.set_yticklabels([])
+        #if i != 0:
+        ax.set_yticklabels([])
             #ax.set_yticklabels([])
         ax.set_xticklabels([r'$f_{kink}$'])
 
-    plt.figure(768)
-    plt.savefig(out_dir+'bars.pdf')
-    plt.savefig(out_dir+'bars.png')
-    plt.savefig(out_dir+'bars.eps')
-    plt.figure(769)
-    plt.savefig(out_dir+'bars_kinks.pdf')
-    plt.savefig(out_dir+'bars_kinks.png')
-    plt.savefig(out_dir+'bars_kinks.eps')
+        plt.figure(768+i)
+        plt.savefig(out_dir+'bars'+str(i)+'.pdf')
+        plt.savefig(out_dir+'bars'+str(i)+'.png')
+        plt.savefig(out_dir+'bars'+str(i)+'.eps')
+        plt.figure(868+i)
+        plt.savefig(out_dir+'bars_kinks'+str(i)+'.pdf')
+        plt.savefig(out_dir+'bars_kinks'+str(i)+'.png')
+        plt.savefig(out_dir+'bars_kinks'+str(i)+'.eps')

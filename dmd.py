@@ -111,9 +111,11 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),f_1*2000.0,atol=1000)).nonzero()))
                 f3Index = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*3000.0,atol=2000)).nonzero()))
-                kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
-                kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
-                #kinkIndex = equilIndex
+                if dmd_flag == 3:
+                    kinkIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.2))
+                    kinkIndex = np.setdiff1d(kinkIndex1,f1Index)
+                else:
+                    kinkIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
                 print(omega[sortd]/(2*pi*1000.0))
                 print(b[sortd]*np.conj(b[sortd]))
@@ -200,9 +202,9 @@ def DMD_slide(total,numwindows,dmd_flag):
 # @param b The DMD coefficients to be altered
 # @param gamma The sparsity-promotion knob
 def sparse_algorithm(trunc,q,P,b,gamma):
-    max_iters = 200000
-    eps_prime = 1e-2/gamma**3
-    eps_dual = 1e-2/gamma**3
+    max_iters = 100000
+    eps_prime = 5e-4
+    eps_dual = 5e-4
     rho = 1.0
     kappa = gamma/rho
     lamda = np.ones((trunc,max_iters),dtype='complex')
