@@ -185,9 +185,23 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
                 f_1,2*f_1,3*f_1])
             ax.set_xticklabels([])
     elif typename=='sparsity-promoting DMD' or typename[9] == '=':
-        plt.subplot(3,1,3)
+        plt.subplot(3,1,2)
         for snum in range(len(delta_k)):
             h0 = plt.scatter(f_k[snum],delta_k[snum],c='r',s=amp[snum], \
+                linewidths=3,edgecolors='k', \
+                label=typename,alpha=transparency)
+            ax = plt.gca()
+            ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
+                f_1,2*f_1,3*f_1])
+            ax.set_xticklabels([])
+                    #plt.scatter(f_k,delta_k,c=amp,s=amp,cmap=plt.cm.get_cmap('Reds'), \
+        #    linewidths=2,edgecolors='k', \
+        #    label=typename,alpha=transparency)
+        #plt.xlabel(r'f (kHz)',fontsize=fs)
+    elif typename=='optimized DMD':
+        plt.subplot(3,1,3)
+        for snum in range(len(delta_k)):
+            h0 = plt.scatter(f_k[snum],delta_k[snum],c='g',s=amp[snum], \
                 linewidths=3,edgecolors='k', \
                 label=typename,alpha=transparency)
             ax = plt.gca()
@@ -197,21 +211,6 @@ def freq_phase_plot(b,omega,f_1,filename,typename):
                 r'$f_1^{inj}$',r'$f_2^{inj}$',r'$f_3^{inj}$'])
             ax.tick_params(axis='both', which='major', labelsize=ts)
             ax.tick_params(axis='both', which='minor', labelsize=ts)
- 
-        #plt.scatter(f_k,delta_k,c=amp,s=amp,cmap=plt.cm.get_cmap('Reds'), \
-        #    linewidths=2,edgecolors='k', \
-        #    label=typename,alpha=transparency)
-        #plt.xlabel(r'f (kHz)',fontsize=fs)
-    elif typename=='optimized DMD':
-        plt.subplot(3,1,2)
-        for snum in range(len(delta_k)):
-            h0 = plt.scatter(f_k[snum],delta_k[snum],c='g',s=amp[snum], \
-                linewidths=3,edgecolors='k', \
-                label=typename,alpha=transparency)
-            ax = plt.gca()
-            ax.set_xticks([-3*f_1,-2*f_1,-f_1,0, \
-                f_1,2*f_1,3*f_1])
-            ax.set_xticklabels([])
         #plt.scatter(f_k,delta_k,c=amp,s=300.0,cmap=plt.cm.get_cmap('Greens'), \
         #    linewidths=2,edgecolors='k', \
         #    label=typename,alpha=transparency)

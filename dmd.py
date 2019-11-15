@@ -97,7 +97,7 @@ def DMD_slide(total,numwindows,dmd_flag):
                 #sortd = np.argsort(abs(np.real(omega))/(2*pi*1000.0))
                 sortd = np.argsort(np.real(omega)/(2*pi*1000.0))
                 print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
+                #print(b[sortd]*np.conj(b[sortd]))
                 equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero())
                 if equilIndex.size==0:
                     equilIndex = np.atleast_1d(np.argmin(abs(np.imag(omega))))
@@ -110,13 +110,13 @@ def DMD_slide(total,numwindows,dmd_flag):
                     abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 #anomIndex = equilIndex
                 sortd = np.flip(np.argsort(abs(b)))
-                print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
-                print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
+                #print(omega[sortd]/(2*pi*1000.0))
+                #print(b[sortd]*np.conj(b[sortd]))
+                #print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
                 bsort = b[sortd]
                 weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
                     sum(abs(b[anomIndex]))
-                print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
+                #print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
                 for mode in range(trunc):
                     Bfield[:,starts[i]:ends[i]] += \
                         0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
@@ -225,6 +225,8 @@ def DMD_forecast(total,numwindows,dmd_flags):
                     eigvals,Y = np.linalg.eig(A)
                     Bt = np.dot(np.dot(Xprime,Vdmd/Sdmd),Y)
                     omega = np.log(eigvals)/dt
+                    print('omega = ')
+                    print(np.sort(omega)/(2*pi*1000))
                     VandermondeT = make_VandermondeT(omega,tbase-tbase[0])
                     Vandermonde = np.transpose(VandermondeT)
                     q = np.conj(np.diag(np.dot(np.dot(np.dot( \
@@ -274,13 +276,13 @@ def DMD_forecast(total,numwindows,dmd_flags):
                 anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
                 sortd = np.flip(np.argsort(abs(b)))
-                print(omega[sortd]/(2*pi*1000.0))
-                print(b[sortd]*np.conj(b[sortd]))
-                print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
+                #print(omega[sortd]/(2*pi*1000.0))
+                #print(b[sortd]*np.conj(b[sortd]))
+                #print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
                 bsort = b[sortd]
                 weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
                     sum(abs(b[anomIndex]))
-                print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
+                #print('weighted avg of omega/(2*pi*1000) = ',weighted_avg)
                 for mode in range(trunc):
                     Bfield[:,starts[i]:ends[i]] += \
                         0.5*b[mode]*np.outer(Bt[:,mode],Vandermonde[mode,:])
@@ -348,6 +350,8 @@ def DMD_forecast(total,numwindows,dmd_flags):
         sdmd_data[:,tsize] = sdmd_data[:,tsize-2]
         b = np.ravel(psi_dict['b'])
         omega = np.ravel(psi_dict['omega'])
+        print('omega == ')
+        print(omega)
         Bt = psi_dict['Bt']
         sparse_b = np.ravel(psi_dict['sparse_b'])
         sparse_omega = np.ravel(psi_dict['sparse_omega'])
@@ -361,6 +365,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
             np.transpose(make_VandermondeT(sparse_omega,time_full-time_full[0]))
         optimized_Vandermonde = \
             np.transpose(make_VandermondeT(optimized_omega,time_full-time_full[0]))
+        equilIndex = np.asarray(np.asarray(abs(np.imag(omega))==0).nonzero()).ravel()
         for mode in range(trunc):
             dmd_data[:,tsize+1:] += \
                 0.5*b[mode]*np.outer(Bt[:,mode], \
@@ -411,7 +416,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
         ax.text(0.75, 0.9, textstr, transform=ax.transAxes, fontsize=ls,
             verticalalignment='top', bbox=props)
 
-        plt.subplot(3,1,3)
+        plt.subplot(3,1,2)
         plt.plot(time_full*1000, \
             psi_dict['full_data'][index+offset,:]*1e4,'k', \
             linewidth=lw, \
@@ -423,7 +428,7 @@ def DMD_forecast(total,numwindows,dmd_flags):
             path_effects=[pe.Stroke(linewidth=lw+4,foreground='k'), \
             pe.Normal()])
 
-        plt.subplot(3,1,2)
+        plt.subplot(3,1,3)
         plt.plot(time_full*1000, \
             psi_dict['full_data'][index+offset,:]*1e4,'k', \
             linewidth=lw, \
