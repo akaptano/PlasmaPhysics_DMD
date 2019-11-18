@@ -9,7 +9,7 @@ Compatibility requires installation of Python 3.7, and the python packages scipy
 This code uses the "click" module for command line arguments and the "numba" module to parallelize some of the code. Much of the code is specific to HIT-SI format files, but the dmd.py file contains the methods and should be easily portable to some other format. To see a list of the command line options, type "python HITSI.py --help". By default, the movies and pictures are written out to a directory called Pictures/. Create this directory or change the default in order to avoid errors. 
 
 A sample command line run for analyzing BIG-HIT simulations with the bighit_dmd branch would be:
-"python HITSI.py --imp 8 --dmd 1 --dmd 3 --filenames bighit_8imp_14.mat --freqs 14.5 --limits 22.5 28.0 --directory dmd_files/ --nprocs 28 --trunc 100"
+"python HITSI.py --imp 8 --dmd 1 --dmd 2 --filenames bighit_8imp_14.mat --freqs 14.5 --limits 22.7 28.5 --directory dmd_files/ --nprocs 28 --trunc 200"
 
 and on the experiment_dmd branch, the analysis on an experimental shot (which has different file formatting and no internal probe arrays)
 "python HITSI.py --imp 0 --filenames exppsi_129499.mat --freqs 14.5 --dmd 1 --dmd 3 --dmd 2 --trunc 30 --forecast True --directory /pylon5/ph5phhp/akaptano/dmd_files/ --limits 0.6 2.0"
