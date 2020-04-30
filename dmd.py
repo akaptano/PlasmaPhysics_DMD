@@ -104,15 +104,12 @@ def DMD_slide(total,numwindows,dmd_flag):
                 equilIndex = np.ravel(equilIndex).tolist()
                 injIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
                     abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=700)).nonzero()))
-                #anomIndex1 = np.ravel(np.where(np.real(omega)/(2*pi*1000.0) > 0.3))
-                #anomIndex = np.setdiff1d(anomIndex1,injIndex)
+                # This is typically used to capture some anomalous frequency
+                # like a kink growth rate. For now it is set to the injector
+                # frequency in order not to throw an error. 
                 anomIndex = np.ravel(np.asarray(np.asarray(np.isclose( \
-                    abs(np.imag(omega)/(2*pi)),14500,atol=1000)).nonzero()))
-                #anomIndex = equilIndex
+                    abs(np.imag(omega)/(2*pi)),f_1*1000.0,atol=1000)).nonzero()))
                 sortd = np.flip(np.argsort(abs(b)))
-                #print(omega[sortd]/(2*pi*1000.0))
-                #print(b[sortd]*np.conj(b[sortd]))
-                #print(anomIndex,injIndex,equilIndex,omega[anomIndex]/(2*pi*1000.0))
                 bsort = b[sortd]
                 weighted_avg = sum(omega[anomIndex]/(2*pi*1000.0)*abs(b[anomIndex]))/ \
                     sum(abs(b[anomIndex]))

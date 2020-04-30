@@ -82,6 +82,7 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
     print('Use DMD methods for forecasting?: ',forecast)
 
     is_HITSI3 = False
+    print(filenames)
     if(len(filenames[0])==9):
         is_HITSI3=True
     filenames=np.atleast_1d(filenames)
