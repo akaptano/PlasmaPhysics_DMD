@@ -39,14 +39,14 @@ import click
         'allows a large number of shots to be '+ \
         'compared')
 @click.option('--freqs', \
-    default=14.5,multiple=True, \
+    default=14.5,type=float,multiple=True, \
     help='A list of all the injector frequencies (kHz) which '+ \
         'correspond to the list of filenames')
 @click.option('--imp', \
     default=0,type=int, \
     help='Number of IMP signals')
 @click.option('--limits', \
-    default=(22.7,28.5),type=(float,float),multiple=True, \
+    default=22.7,type=float,multiple=True, \
     help='Time limits for each of the discharges')
 @click.option('--nprocs', \
     default=1,type=int, \
@@ -86,20 +86,21 @@ def analysis(dmd,numwindows,directory,animate_dmd,filenames,freqs, \
         is_HITSI3=True
     filenames=np.atleast_1d(filenames)
     freqs=np.atleast_1d(freqs)
+    limits=np.atleast_1d(limits)
     total = []
     for i in range(len(filenames)):
         filename = filenames[i]
         f_1 = np.atleast_1d(freqs[i])
         if filenames[i][0:10]=='Psi-Tet-2T':
             temp_dict = loadshot('Psi-Tet-2T',directory, \
-                int(f_1),True,True,is_HITSI3,limits[i])
+                    int(f_1),True,True,is_HITSI3,limits[2*i:2*(i+1)])
         elif filenames[i][0:3]=='Psi':
             temp_dict = loadshot('Psi-Tet',directory, \
-                int(f_1),True,False,is_HITSI3,limits[i])
+                    int(f_1),True,False,is_HITSI3,limits[2*i:2*(i+1)])
         else:
             temp_dict = loadshot(filename,directory, \
                 np.atleast_1d(int(f_1)),False,False, \
-                is_HITSI3,limits[i])
+                is_HITSI3,limits[2*i:2*(i+1)])
         if imp == 0:
             temp_dict['use_IMP'] = False
             temp_dict['num_IMPs'] = 0
